@@ -1,24 +1,28 @@
 'use strict'
 let map;
-let centre = [50.157876, -5.072937];
-let Zoom = 14;
 
 // If url contains centre and zoom
-const $_GET = {};
-const args = location.search.substr(1).split(/&/);
-
-if (args.length > 1) {
-	let tmp = args[0].split(/=/);
-	if (tmp[0] !== '') {
-		const comp = decodeURIComponent(tmp.slice(1).join('').replace('+', ' '));
-		centre = comp.replace('LatLng(', '');
-		centre = centre.replace(')', '');
-		centre = centre.split(/,/);
+const centreAndZoom = () => {
+	const $_GET = {};
+	const args = location.search.substr(1).split(/&/);
+	let centre, zoom;
+	if (args.length > 1) {
+		let tmp = args[0].split(/=/);
+		if (tmp[0] !== '') {
+			const comp = decodeURIComponent(tmp.slice(1).join('').replace('+', ' '));
+			centre = comp.replace('LatLng(', '');
+			centre = centre.replace(')', '');
+			centre = centre.split(/,/);
+		}
+		tmp = args[1].split(/=/);
+		if (tmp[0] !== '') {
+			zoom = decodeURIComponent(tmp.slice(1).join('').replace('+', ' '));
+		}
+	} else {
+		centre = config.defaultLocation;
+		zoom = config.defaultZoom;
 	}
-	tmp = args[1].split(/=/);
-	if (tmp[0] !== '') {
-		Zoom = decodeURIComponent(tmp.slice(1).join('').replace('+', ' '));
-	}
+	return [centre, zoom];
 }
 
 function initmap() {
@@ -37,7 +41,7 @@ function initmap() {
 	//  attribution: '&copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community' });
 	const sea = L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', 
 		{ id: 'sea', 
-		attribution: 'Map data: &copy; <a href="https://www.openseamap.org">OpenSeaMap</a> contributors' });
+			attribution: 'Map data: &copy; <a href="https://www.openseamap.org">OpenSeaMap</a> contributors' });
 	const transport = L.tileLayer(`https://tile.thunderforest.com/transport/{z}/{x}/{y}.png?apikey=${config.tfAPI}`, 
 		{ id: 'transport', 
 			attribution: 'Map data &copy; <a href=https://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' });
@@ -54,8 +58,8 @@ function initmap() {
 	//  attribution: '<a href="https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer" target="_blank">USGS</a>' });
 
 	map = new L.Map('map', {
-		center: centre,
-		zoom: Zoom,
+		center: centreAndZoom()[0],
+		zoom: centreAndZoom()[1],
 		layers: [osm],
 	});
 
@@ -80,10 +84,10 @@ function initmap() {
 	// Set cursors
 	document.getElementById('map').style.cursor = 'default';
 
-	onmousedown = function() {
+	onmousedown = () => {
 		document.getElementById('map').style.cursor = 'move';
 	}
-	onmouseup = function() {
+	onmouseup = () => {
 		document.getElementById('map').style.cursor = 'default';
 	}
 
@@ -106,7 +110,7 @@ function initmap() {
 
 	function geoDataRequest(url) {
 		const xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = function () {
+		xhttp.onreadystatechange = () => {
 			if (this.readyState === 4 && this.status === 200) {
 				geoData(xhttp);
 			}
@@ -121,7 +125,7 @@ function initmap() {
 			.setLatLng(e.latlng)
 			.setContent(`${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}<br /><button class="button" id="geo">What's here?</button>`)
 			.openOn(map);
-		document.getElementById('geo').onclick = function () {
+		document.getElementById('geo').onclick = () => {
 			e.preventDefault;
 			const geoURL = `https://nominatim.openstreetmap.org/?addressdetails=1&q=${e.latlng.lat},${e.latlng.lng}&format=json&limit=1`;
 			geoDataRequest(geoURL);
@@ -153,11 +157,11 @@ function initmap() {
 			L.DomEvent.on(reloadButton, 'mousedown', L.DomEvent.stopPropagation);
 			L.DomEvent.on(reloadButton, 'mousewheel', L.DomEvent.stopPropagation);
 
-			reloadButton.onclick = function () {
-				centre = map.getCenter();
+			reloadButton.onclick = () => {
+				const centre = map.getCenter();
 				//		centre = centre;
-				Zoom = map.getZoom();
-				const url = `index.html?coords=${centre}&zoom=${Zoom}`;
+				const zoom = map.getZoom();
+				const url = `index.html?coords=${centre}&zoom=${zoom}`;
 				window.location.href = url;
 			};
 			return reloadButton;
@@ -168,7 +172,7 @@ function initmap() {
 		},
 	});
 
-	L.control.reload = function (option) {
+	L.control.reload = (option) => {
 		return new L.Control.Reload(option);
 	};
 	L.control.reload({ position: 'topleft' }).addTo(map);

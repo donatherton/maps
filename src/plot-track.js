@@ -19,7 +19,7 @@ L.Control.CreateRoute = L.Control.extend({
 		popupAnchor: [0, -10], // point from which the popup should open relative to the iconAnchor
 	});
 
-	button.onclick = function () {
+	button.onclick = () => {
 		L.Control.InfoWindow = L.Control.extend({
 			onAdd(map) {
 			const divInfo = L.DomUtil.create('div', 'info-window');
@@ -30,7 +30,7 @@ L.Control.CreateRoute = L.Control.extend({
 			return divInfo;
 			},
 		});
-		L.control.infoWindow = function (options) {
+		L.control.infoWindow = (options) => {
 				return new L.Control.InfoWindow(options);
 		};
 		L.control.infoWindow({ position: 'topright' }).addTo(map);
@@ -41,10 +41,10 @@ L.Control.CreateRoute = L.Control.extend({
 // Set cursors
 //		document.getElementById('map').style.cursor = 'default';
 
-//		onmousedown = function() {
+//		onmousedown = () => {
 //			document.getElementById('map').style.cursor = 'move';
 //		}
-//		onmouseup = function() {
+//		onmouseup = () => {
 //			document.getElementById('map').style.cursor = 'default';
 //		}
 
@@ -70,7 +70,7 @@ L.Control.CreateRoute = L.Control.extend({
 			request.setRequestHeader('Accept', 'application/json');
 			request.setRequestHeader('Content-Type', 'application/json');
 			request.setRequestHeader('Authorization', config.orsAPI);
-			request.onreadystatechange = function () {
+			request.onreadystatechange = function() {
 				if (this.readyState === 4 && request.status === 200) {
 					const data = JSON.parse(request.response);
 					const coords = [];
@@ -201,10 +201,10 @@ L.Control.CreateRoute = L.Control.extend({
 			insBtn.innerHTML = 'Insert point';
 			e.target.bindPopup(newPopup).openPopup();
 
-			document.getElementById("delbtn").onclick = function() {
+			document.getElementById("delbtn").onclick = () => {
 				deletepoint(e);
 			};
-			document.getElementById("insbtn").onclick = function() {
+			document.getElementById("insbtn").onclick = () => {
 				insertpoint(e);
 			};
 		}
@@ -281,7 +281,7 @@ L.Control.CreateRoute = L.Control.extend({
 	return button;
   },
 });
-L.control.createRoute = function (options) {
+L.control.createRoute = (options) => {
   return new L.Control.CreateRoute(options);
 };
 L.control.createRoute().addTo(map);

@@ -57,7 +57,7 @@ L.Control.PlaceSearch = L.Control.extend({
 			const searchUrl = `https://nominatim.openstreetmap.org/?format=json&addressdetails=1&q=${geosearch}&format=json&limit=5&email=don@donatherton.co.uk`;
 
 			const xhttp = new XMLHttpRequest();
-			xhttp.onreadystatechange = function () {
+			xhttp.onreadystatechange = () => {
 				if (this.readyState === 4 && this.status === 200) {
 					const results = JSON.parse(xhttp.response);
 					if (results.length > 0) {
@@ -98,7 +98,7 @@ L.Control.PlaceSearch = L.Control.extend({
 	},
 });
 
-L.control.placeSearch = function (options) {
+L.control.placeSearch = (options) => {
 	return new L.Control.PlaceSearch(options);
 };
 L.control.placeSearch().addTo(map);

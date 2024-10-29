@@ -119,7 +119,7 @@ L.Control.Elevation = L.Control.extend({
     };
 
     // Create a custom tooltip positioner to put at the bottom of the chart area
-    Chart.Tooltip.positioners.custom = function (items) {
+    Chart.Tooltip.positioners.custom = (items) => {
       const pos = Chart.Tooltip.positioners.average(items);
       // Happens when nothing is found
       if (pos === false) {
@@ -209,6 +209,6 @@ L.Control.Elevation = L.Control.extend({
   },
 
 });
-L.control.elevation = function (options) {
+L.control.elevation = (options) => {
   return new L.Control.Elevation(options);
 };

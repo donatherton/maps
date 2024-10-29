@@ -73,7 +73,7 @@ L.Control.FindLocation = L.Control.extend({
 	let i = true;
 	let id;
 	let mark;
-	button.onclick = function () {
+		button.onclick = () => {
 	/*		map.locate()
 
 		function onLocationFound(e) {
@@ -131,7 +131,7 @@ L.Control.FindLocation = L.Control.extend({
 	return button;
 	},
 });
-L.control.findLocation = function (options) {
+L.control.findLocation = (options) => {
 	return new L.Control.FindLocation(options);
 };
 L.control.findLocation({

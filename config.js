@@ -12,5 +12,7 @@ const config = {
 // GH default
 //const vehicle= 'foot';
 // ORS
-	preference: 'shortest'
+	preference: 'shortest',
+	defaultLocation: [50.157876, -5.072937],
+	defaultZoom: 14
 }

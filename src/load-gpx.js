@@ -100,12 +100,12 @@ L.Control.LoadGPX = L.Control.extend({
 			}
 		}// end loadGPX
 
-		button.onclick = function() {
+		button.onclick = () => {
 			fileInput.click();
-			fileInput.onchange = function() {
+			fileInput.onchange = () => {
 			const file = fileInput.files[0];
 			const reader = new FileReader();
-			reader.onload = function () {
+			reader.onload = () => {
 				const parser = new DOMParser();
 				const gpx = parser.parseFromString(reader.result, 'text/xml');
 				loadGPX(gpx);
@@ -119,7 +119,7 @@ L.Control.LoadGPX = L.Control.extend({
 		return button;
 	},
 });
-L.control.loadGPX = function (options) {
+L.control.loadGPX = (options) => {
 	return new L.Control.LoadGPX(options);
 };
 L.control.loadGPX({

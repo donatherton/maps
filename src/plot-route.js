@@ -50,7 +50,7 @@ L.Control.PlotRoute = L.Control.extend({
 					return divInfo;
 				},
 			});
-			L.control.infoWindow = function (options) {
+			L.control.infoWindow = (options) => {
 				return new L.Control.InfoWindow(options);
 			};
 			L.control.infoWindow({ position: 'topright' }).addTo(map);
