@@ -1,0 +1,208 @@
+html, body {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+}
+#map {
+	height: 100%;
+}
+#route-planner {display: none;}
+.button {
+	background-color: #fff;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+	padding: 1px 2px;
+	text-align: center;
+	text-decoration: none;
+	margin: 2px 2px;
+	cursor: pointer;
+	font:12px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif;
+}
+.button:hover{
+	border-color: #fff;
+}
+.button:active{
+	background-color:#999999;
+}
+.profileSelect {
+	background-color: rgba(0,125,125,0.5);
+	padding: 3px;
+}
+.leaflet-control {
+/*clear: none;*/
+}
+.leaflet-popup-pane {
+	opacity: 0.9;
+}
+.location-button {
+	background-image: url(../images/location.png);
+}
+.fullscreen {
+	background-image: url(../images/fullscreen.png);
+}
+.ors-routing {
+	background-image: url(../images/routing_icon.png);
+}
+.load_button {
+	text-align: center;
+	padding: 2px 0;
+}
+.reload {
+	background-image: url(../images/view-refresh.png);
+}
+.edit-gpx {
+	background-image: url(../images/edit-icon.png);
+}
+.track-plotter {
+	background-image: url(../images/routing-icon.png);
+}
+.modal {
+	display: none; /* Hidden by default */
+	position: fixed; /* Stay in place */
+	z-index: 10000; /* Sit on top */
+	left: 0;
+	top: 0;
+	width: 100%; /* Full width */
+	height: 100%; /* Full height */
+	overflow: auto; /* Enable scroll if needed */
+	background-color: rgb(0,0,0); /* Fallback color */
+	background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content/Box */
+.modal-content {
+	background-color: #fefefe;
+	margin: 15% auto; /* 15% from the top and centered */
+	padding: 20px;
+	border: 1px solid #888;
+	border-radius: 10px;
+	width: 80%; /* Could be more or less, depending on screen size */
+}
+/* The Close Button */
+.close {
+	color: #aaa;
+/*	float: right;*/
+	font-size: 28px;
+	font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+	color: black;
+	text-decoration: none;
+	cursor: pointer;
+}
+.measure {
+	background-image: url(../images/24.png);
+	background-repeat: no-repeat;
+}
+.divicon {
+	background-color: #05f;
+	border: 1px solid #005;
+	border-radius: 10px;
+}
+.starticon {
+	background-color: #080;
+	border: 2px solid #005;
+	border-radius: 15px;
+}
+.endicon {
+background-color: #f00;
+border: 2px solid #005;
+border-radius: 15px;
+}
+.leaflet-routing-alt, .leaflet-routing-geocoders {
+	max-height: 160px;
+}
+.info-window {
+max-width: 300px;
+background: rgba(255,255,255,.8);
+box-shadow: 4px 4px 4px 4px rgba(0, 0, 0, 0.1), 0 4px 4px 4px rgba(0, 0, 0, 0.1);
+border: 1px #fff;
+border-radius: 5px;
+}
+.info-window-inner {
+width: 100%;
+overflow: auto;
+max-height: 165px;
+padding: 5px
+}
+.elev-window {
+background: rgba(156, 194, 34, 0.2);
+width: 95vw;
+max-width: 700px;
+max-height: 100px;
+box-shadow: 4px 4px 4px 4px rgba(0, 0, 0, 0.1), 0 4px 4px 4px rgba(0, 0, 0, 0.1);
+border: 1px #fff;
+border-radius: 5px;
+}
+p {
+	width: 100%;
+/*padding: 3px;*/
+	margin: 0;
+}
+p:hover {
+	background-color:#ddd
+}
+div.input-elems p {
+background-color: #fff;
+}
+.info-window-input {
+width: 90%;
+}
+.inputElems {
+margin: 0;
+}
+#searchDropdown {
+	position:absolute;
+	top:0;
+	right:250px;
+	float:left;
+	list-style: none;
+	padding: 5px;
+	width: 235px;
+	max-height:260px;
+	box-shadow: 1px 1px 6px rgba(0,0,0,0.4);
+	background-color: #fff;
+	z-index:1010;
+	overflow-y:auto;
+	overflow-x:hidden;
+	cursor: pointer;
+}
+#searchDropdown1 {
+	position:absolute;
+	top: 31px;
+	left: 36px;
+	list-style: none;
+	padding: 5px;
+	width: 235px;
+	max-height:260px;
+	box-shadow: 1px 1px 6px rgba(0,0,0,0.4);
+	background-color: #fff;
+	z-index:1010;
+	overflow-y:auto;
+	overflow-x:hidden;
+	cursor: pointer;
+}
+#search-div {
+	position: absolute;
+	top: -5px;
+	left: 27px;
+	height: 25px;
+	padding: 5px;
+	width: 0;
+	overflow: hidden;
+}
+#search-input {
+	width: 95%;
+	display: block;
+}
+.search-button {
+	display:block;
+	float:left;
+	width:30px;
+	height:30px;
+	background: url('../images/search-icon.png') no-repeat 2px 2px #fff;
+	border-radius:4px;
+}
+
