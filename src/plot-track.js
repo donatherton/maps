@@ -62,9 +62,6 @@ L.Control.CreateRoute = L.Control.extend({
 				for (let i = 0; i < wpts.length; i++) {
 					wpt.push(Object.values(wpts[i]).reverse());
 				}
-
-				//wpt = `[[${wpt.join('],[')}]]`;
-
 				fetch(`https://api.openrouteservice.org/elevation/line`, {
 					method: 'POST',
 					headers: {
@@ -79,7 +76,7 @@ L.Control.CreateRoute = L.Control.extend({
 					})
 				})
 					.then(response => response.json())
-					.then(data => {console.log(data)
+					.then(data => {
 						const coords = [];
 						for (let i = 0; i < data.geometry.length; i++) {
 							const coord = {};
@@ -88,51 +85,16 @@ L.Control.CreateRoute = L.Control.extend({
 							coord.lng = data.geometry[i][0];
 							coords.push(coord);
 						}
-
 						// Elevation diagram
 						// Get rid of previous chart
 						if (document.getElementById('elevation-div')) {
 							L.DomUtil.remove(document.getElementById('elevation-div'));
 						}
-
 						const el = L.control.elevation();
 						el.addTo(map);
 						el.addData(coords);
 					})
-			})
-			
-
-		//		const request = new XMLHttpRequest();
-		//		request.open('POST', `https://api.openrouteservice.org/elevation/line`);
-		//		request.setRequestHeader('Accept', 'application/json');
-		//		request.setRequestHeader('Content-Type', 'application/json');
-		//		request.setRequestHeader('Authorization', config.orsAPI);
-		//		request.onreadystatechange = function() {
-		//			if (this.readyState === 4 && request.status === 200) {
-		//				const data = JSON.parse(request.response);
-		//				const coords = [];
-		//				for (let i = 0; i < data.geometry.length; i++) {
-		//					const coord = {};
-		//					coord.alt = data.geometry[i][2];
-		//					coord.lat = data.geometry[i][1];
-		//					coord.lng = data.geometry[i][0];
-		//					coords.push(coord);
-		//				}
-
-		//				// Elevation diagram
-		//				// Get rid of previous chart
-		//				if (document.getElementById('elevation-div')) {
-		//					L.DomUtil.remove(document.getElementById('elevation-div'));
-		//				}
-
-		//				const el = L.control.elevation();
-		//				el.addTo(map);
-		//				el.addData(coords);
-		//			}
-		//		}
-		//	const body = `{"format_in": "polyline","format_out": "polyline","geometry": ${wpt}}`;
-		//	request.send(body);
-	//	});
+				})
 
 		L.DomEvent.on(reset, 'click', () => {
 			if (typeof el !== 'undefined') el.remove();

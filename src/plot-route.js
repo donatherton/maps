@@ -27,16 +27,6 @@ L.Control.PlotRoute = L.Control.extend({
 			// Remove these buttons to stop confusing things
 			document.getElementById('plotter').style = 'display:none';
 			document.getElementById('ors-router').style = 'display:none';
-
-			//			document.getElementById('map').style.cursor = 'crosshair';
-
-			//			document.getElementById('map').onmousedown = function() {
-			//				document.getElementById('map').style.cursor = 'crosshair';
-			//			}
-			//			document.getElementById('map').onmouseup = function() {
-			//				document.getElementById('map').style.cursor = 'move';
-			//			}
-
 			// info window
 			L.Control.InfoWindow = L.Control.extend({
 				onAdd(map) {

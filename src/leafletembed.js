@@ -60,9 +60,9 @@ function initmap() {
 		{ id: 'streets', 
 			attribution: '<a href="https://mapbox.com/about/maps" class="mapbox-wordmark" target="_blank">Mapbox</a> &copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> <strong><a href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a></strong>', 
 			maxZoom: 21 });
-
 	//  const tileUrl = L.tileLayer('https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}', { id: 'elev', 
 	//  attribution: '<a href="https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer" target="_blank">USGS</a>' });
+
 	const cz = centreAndZoom();
 	map = new L.Map('map', {
 		center: cz.getCentre(),
@@ -98,23 +98,6 @@ function initmap() {
 		document.getElementById('map').style.cursor = 'default';
 	}
 
-	//function geoData(geoLabel) {
-	//	//let i;
-	//	//let coords = [];
-
-	//	//	if (typeof(newMarker) !== 'undefined') {
-	//	//		if (map.hasLayer(newMarker)) map.removeLayer(newMarker);
-	//	//	}
-	//	//const geolabel = JSON.parse(xhttp.response);
-
-	//	const coords = [geoLabel[0].lat, geoLabel[0].lon];
-	//	L.popup()
-	//		.setContent('<a href="https://duckduckgo.com/?q='
-	//			+ `${geoLabel[0].display_name}" target="_blank">${geoLabel[0].display_name}</a>`)
-	//		.setLatLng(coords)
-	//		.openOn(map);
-	//}
-
 	function geoDataRequest(url) {
 		fetch(url)
 			.then(response => response.json())
@@ -126,15 +109,6 @@ function initmap() {
 					.setLatLng(coords)
 					.openOn(map);
 			})
-		//geoData(data));
-		//	const xhttp = new XMLHttpRequest();
-		//	xhttp.onreadystatechange = function() {
-		//		if (this.readyState === 4 && this.status === 200) {
-		//			geoData(xhttp);
-		//		}
-		//	};
-		//	xhttp.open('GET', url, true);
-		//	xhttp.send();
 	}
 
 	function geocode(e) {
