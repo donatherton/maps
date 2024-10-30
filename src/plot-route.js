@@ -28,14 +28,14 @@ L.Control.PlotRoute = L.Control.extend({
 			document.getElementById('plotter').style = 'display:none';
 			document.getElementById('ors-router').style = 'display:none';
 
-//			document.getElementById('map').style.cursor = 'crosshair';
+			//			document.getElementById('map').style.cursor = 'crosshair';
 
-//			document.getElementById('map').onmousedown = function() {
-//				document.getElementById('map').style.cursor = 'crosshair';
-//			}
-//			document.getElementById('map').onmouseup = function() {
-//				document.getElementById('map').style.cursor = 'move';
-//			}
+			//			document.getElementById('map').onmousedown = function() {
+			//				document.getElementById('map').style.cursor = 'crosshair';
+			//			}
+			//			document.getElementById('map').onmouseup = function() {
+			//				document.getElementById('map').style.cursor = 'move';
+			//			}
 
 			// info window
 			L.Control.InfoWindow = L.Control.extend({
@@ -110,7 +110,7 @@ L.Control.PlotRoute = L.Control.extend({
 				}
 				wpts.splice(j + 1, 0, latlon);
 				routeRequest();
-//				geoRequest(latlon, newIndex, 'ins');
+				//				geoRequest(latlon, newIndex, 'ins');
 			}
 
 			function deletepoint(e) {
@@ -129,7 +129,7 @@ L.Control.PlotRoute = L.Control.extend({
 					}
 					map.removeLayer(e.target);
 					routeRequest();
-//						geoRequest(latlng, i, 'del');
+					//						geoRequest(latlng, i, 'del');
 				});
 			}
 
@@ -152,27 +152,36 @@ L.Control.PlotRoute = L.Control.extend({
 				} else {
 					wpts[thisMarker] = latlng;
 					routeRequest();
-//					geoRequest(latlng, thisMarker, 'change');
+					//					geoRequest(latlng, thisMarker, 'change');
 				}
 			}
 
 			function geoDataRequest(e) {
-				const xhttp = new XMLHttpRequest();
-				xhttp.onreadystatechange = function () {
-					if (this.readyState === 4 && this.status === 200) {
-						let i;
-						let coords = [];
-						const geolabel = JSON.parse(xhttp.response);
-						coords = [geolabel[0]['lat'],geolabel[0]['lon']];
+				fetch(`https://nominatim.openstreetmap.org/?addressdetails=1&q=${e.latlng.lat},${e.latlng.lng}&format=json&limit=1`)
+					.then(response => response.json())
+					.then(geoLabel => {
+						const coords = [geoLabel[0]['lat'],geoLabel[0]['lon']];
 						L.popup()
 							.setContent(`<a href="https://duckduckgo.com/?q=`
-							+ `${geolabel[0]['display_name']}" target="_blank">${geolabel[0]['display_name']}</a>`)
+								+ `${geoLabel[0]['display_name']}" target="_blank">${geoLabel[0]['display_name']}</a>`)
 							.setLatLng(coords)
 							.openOn(map);
-					}
-				};
-				xhttp.open('GET', `https://nominatim.openstreetmap.org/?addressdetails=1&q=${e.latlng.lat},${e.latlng.lng}&format=json&limit=1`, true);
-				xhttp.send();
+					})
+				//	const xhttp = new XMLHttpRequest();
+				//	xhttp.onreadystatechange = function () {
+				//		if (this.readyState === 4 && this.status === 200) {
+				//			let coords = [];
+				//			const geolabel = JSON.parse(xhttp.response);
+				//			coords = [geolabel[0]['lat'],geolabel[0]['lon']];
+				//			L.popup()
+				//				.setContent(`<a href="https://duckduckgo.com/?q=`
+				//				+ `${geolabel[0]['display_name']}" target="_blank">${geolabel[0]['display_name']}</a>`)
+				//				.setLatLng(coords)
+				//				.openOn(map);
+				//		}
+				//	};
+				//	xhttp.open('GET', `https://nominatim.openstreetmap.org/?addressdetails=1&q=${e.latlng.lat},${e.latlng.lng}&format=json&limit=1`, true);
+				//	xhttp.send();
 			}
 
 			function popup(e) {
@@ -182,8 +191,8 @@ L.Control.PlotRoute = L.Control.extend({
 
 				L.popup()
 					.setContent(`${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}<br />`
-					+ '<button class="button" id="what">What\'s here?</button><br>'
-					+ `<button class="button" id="${buttonID}">${buttonText}</button>`)
+						+ '<button class="button" id="what">What\'s here?</button><br>'
+						+ `<button class="button" id="${buttonID}">${buttonText}</button>`)
 					.setLatLng(e.latlng)
 					.openOn(map);
 				document.getElementById('what').onclick = function() {
@@ -200,7 +209,7 @@ L.Control.PlotRoute = L.Control.extend({
 						.on('dragend', onDragEnd)
 						.on('contextmenu', deletepoint);
 					routeRequest();
-//					geoRequest(e.latlng, 0, 'ins');
+					//					geoRequest(e.latlng, 0, 'ins');
 				}
 			};
 			map.addEventListener('contextmenu', popup);
@@ -226,7 +235,7 @@ L.Control.PlotRoute = L.Control.extend({
 				map.on('mousemove', (e) => {
 					newMarker.setLatLng(e.latlng);
 				});
-					map.on('mouseup', (e) => {
+				map.on('mouseup', (e) => {
 					map.off('mousemove');
 					map.dragging.enable();
 					map.off('mouseup');
@@ -258,7 +267,7 @@ L.Control.PlotRoute = L.Control.extend({
 					});
 				}
 
-				route = JSON.parse(request.response);
+				route = request; //JSON.parse(request);
 				route = route.features[0];
 				coords = route.geometry.coordinates;
 				coords = decodePolyline(coords);
@@ -312,11 +321,11 @@ L.Control.PlotRoute = L.Control.extend({
 					.on('mousedown', clickPolyline)
 					.on('mouseup', onDragEnd);
 
-			map.fitBounds(polyline.getBounds());
+				map.fitBounds(polyline.getBounds());
 
-//			Add elevation diagram
-			el.clear();
-			el.addData(coords);
+				//			Add elevation diagram
+				el.clear();
+				el.addData(coords);
 			}
 
 			function routeRequest() {
@@ -324,54 +333,77 @@ L.Control.PlotRoute = L.Control.extend({
 					let plot = [];
 
 					let ferry = document.getElementsByName('ferry');
-					if (ferry[0].checked) ferry = '"avoid_features":["ferries"]'
-					else ferry = '';
+					if (ferry[0].checked) ferry = ['ferries']
+					else ferry = [];
 
 					for (let i = 0; i < wpts.length; i=i+1) {
-						plot.push(`${wpts[i].lng},${wpts[i].lat}`);
+						plot.push([wpts[i].lng, wpts[i].lat]);
 					}
-					plot = `[[${plot.join('],[')}]]`;
-					const request = new XMLHttpRequest();
-					request.open('POST', `https://api.openrouteservice.org/v2/directions/${config.profile}/geojson`);
-					request.setRequestHeader('Accept', 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8');
-					request.setRequestHeader('Content-Type', 'application/json');
-					request.setRequestHeader('Authorization', config.orsAPI);
-					request.onreadystatechange = function () {
-						if (this.readyState === 4 && request.status === 200) {
-							loadRoute(request);
-						}
-					}
-					const body = `{
-						"coordinates":${plot},
-						"elevation":"true",
-						"instructions":"true",
-						"preference":"${config.preference}",
-						"options":{${ferry}}
-					}`;
-					request.send(body);
-				}
-			};
+					//plot = `[[${plot.join('],[')}]]`;
 
-//			function geoRequest(coord, wp, whatToDo) {
-//				const geoURL = `https://nominatim.openstreetmap.org/reverse/?lat=${coord.lat}&lon=${coord.lng}&zoom=18&addressdetails=1&format=json&email=don@donatherton.co.uk`;
-//				const xhttp = new XMLHttpRequest();
-//				xhttp.onreadystatechange = function () {
-//					if (xhttp.readyState === 4 && xhttp.status === 200) {
-//							const geodata = JSON.parse(xhttp.response);
-//							switch (whatToDo) {
-//								case 'change': geolabel[wp] = geodata.display_name; break;
-//								case 'ins': geolabel.splice(wp, 0, geodata.display_name); break;
-//								case 'del': geolabel.splice(wp, 1); break;
-//							}
-//							geoInfo.innerHTML = '';
-//							for (let i = 0; i < geolabel.length; i=i+1) {
-//								geoInfo.innerHTML += `<p>${geolabel[i]}</p>`;
-//							}
-//					}
-//				};
-//				xhttp.open('GET', geoURL, true);
-//				xhttp.send();
-//			}
+					//request.setRequestHeader('Accept', 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8';
+					const url = `https://api.openrouteservice.org/v2/directions/${config.profile}/geojson`;
+					fetch(url, {
+						method: 'POST',
+						headers: {
+							'Accept': 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8',
+							'Content-Type': 'application/json',
+							'Authorization': config.orsAPI
+						},
+						body: JSON.stringify({
+							'coordinates': plot,
+							'elevation': true,
+							'instructions': true,
+							'preference': config.preference,
+							'options': {'avoid_features': ferry}
+					})
+					})
+						.then(response => response.json())
+						.then(request => loadRoute(request))
+				}
+			}
+
+			//const request = new XMLHttpRequest();
+			//request.open('POST', `https://api.openrouteservice.org/v2/directions/${config.profile}/geojson`);
+			//request.setRequestHeader('Accept', 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8');
+			//request.setRequestHeader('Content-Type', 'application/json');
+			//request.setRequestHeader('Authorization', config.orsAPI);
+			//request.onreadystatechange = function () {
+			//	if (this.readyState === 4 && request.status === 200) {
+			//		loadRoute(request);
+			//	}
+			//}
+			//const body = `{
+			//	"coordinates":${plot},
+			//	"elevation":"true",
+			//	"instructions":"true",
+			//	"preference":"${config.preference}",
+			//	"options":{${ferry}}
+			//}`;
+			//request.send(body);
+			//	}
+			//	};
+
+			//			function geoRequest(coord, wp, whatToDo) {
+			//				const geoURL = `https://nominatim.openstreetmap.org/reverse/?lat=${coord.lat}&lon=${coord.lng}&zoom=18&addressdetails=1&format=json&email=don@donatherton.co.uk`;
+			//				const xhttp = new XMLHttpRequest();
+			//				xhttp.onreadystatechange = function () {
+			//					if (xhttp.readyState === 4 && xhttp.status === 200) {
+			//							const geodata = JSON.parse(xhttp.response);
+			//							switch (whatToDo) {
+			//								case 'change': geolabel[wp] = geodata.display_name; break;
+			//								case 'ins': geolabel.splice(wp, 0, geodata.display_name); break;
+			//								case 'del': geolabel.splice(wp, 1); break;
+			//							}
+			//							geoInfo.innerHTML = '';
+			//							for (let i = 0; i < geolabel.length; i=i+1) {
+			//								geoInfo.innerHTML += `<p>${geolabel[i]}</p>`;
+			//							}
+			//					}
+			//				};
+			//				xhttp.open('GET', geoURL, true);
+			//				xhttp.send();
+			//			}
 
 			L.DomEvent.on(dlButton, 'click', () => {
 				let fileName = prompt('Please enter a name for the route');
@@ -385,22 +417,22 @@ L.Control.PlotRoute = L.Control.extend({
 				}
 				gpxtrack += '</trkseg>\n</trk>\n</gpx>';
 
-			const header = '<?xml version="1.0" encoding="UTF-8" standalone="no" ?>\n'
-			+ '<gpx xmlns="http://www.topografix.com/GPX/1/1"  creator="DonMaps" version='
-			+ '"1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='
-			+ '"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">\n<trk>\n<name>';
+				const header = '<?xml version="1.0" encoding="UTF-8" standalone="no" ?>\n'
+					+ '<gpx xmlns="http://www.topografix.com/GPX/1/1"  creator="DonMaps" version='
+					+ '"1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='
+					+ '"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">\n<trk>\n<name>';
 
-			const gpx = header + fileName + gpxtrack;
-			const a = document.createElement('a');
-			const mimeType = 'text/csv;encoding:utf-8'; //mimeType || 'application/octet-stream';
-			document.body.appendChild(a);
-			a.href = URL.createObjectURL(new Blob([gpx], {
-						type: mimeType,
-			}));
-			a.download = fileName + '.gpx';
-			a.click();
-			document.body.removeChild(a);
-		});
+				const gpx = header + fileName + gpxtrack;
+				const a = document.createElement('a');
+				const mimeType = 'text/csv;encoding:utf-8'; //mimeType || 'application/octet-stream';
+				document.body.appendChild(a);
+				a.href = URL.createObjectURL(new Blob([gpx], {
+					type: mimeType,
+				}));
+				a.download = fileName + '.gpx';
+				a.click();
+				document.body.removeChild(a);
+			});
 
 			L.DomEvent.on(closeButton, 'click', () => {
 				if (divInfo.style.left === '100%') {
@@ -431,7 +463,7 @@ L.Control.PlotRoute = L.Control.extend({
 					key = keys[k]
 				}
 				profileSelect.innerHTML += `<input type="radio" id="${profiles[key]}" `
-				+ `name="profile" value="${profiles[key]}"${checked}>	<label for="${profiles[key]}">${key}</label>`;
+					+ `name="profile" value="${profiles[key]}"${checked}>	<label for="${profiles[key]}">${key}</label>`;
 			}
 			L.DomEvent.on(profileSelect, 'click', () => {
 				const radioValue = document.getElementsByName('profile');
@@ -446,8 +478,8 @@ L.Control.PlotRoute = L.Control.extend({
 
 			const pref = L.DomUtil.create('div', '', profileSelect);
 			pref.innerHTML = '<label><input type="radio" id ="shortest" name="pref" value="shortest" checked>'
-			+ 'Shortest</label><label><input type="radio" id ="fastest" name="pref" value="fastest">Fastest</label>'
-			+ '<label><input type="checkbox" id="other_prefs" name="ferry" checked>Avoid ferries</label>';
+				+ 'Shortest</label><label><input type="radio" id ="fastest" name="pref" value="fastest">Fastest</label>'
+				+ '<label><input type="checkbox" id="other_prefs" name="ferry" checked>Avoid ferries</label>';
 
 			L.DomEvent.on(pref, 'click', (() => {
 				const radioValue = document.getElementsByName('pref');
@@ -463,7 +495,7 @@ L.Control.PlotRoute = L.Control.extend({
 		}); // L.DomEvent.on(button, 'click', () => {
 
 		L.DomEvent.on(button, 'click', L.DomEvent.stopPropagation);
-			return button;
+		return button;
 	},
 });
 L.control.plotRoute = function (options) {

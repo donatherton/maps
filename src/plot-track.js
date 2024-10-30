@@ -1,101 +1,138 @@
 "use strict";
 L.Control.CreateRoute = L.Control.extend({
-  options: {
-	position: 'topleft',
-  },
-  onAdd(map) {
-	const button = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom track-plotter');
-	button.title = 'Measure / plot route manually';
-	button.style.backgroundColor = 'white';
-	button.style.backgroundSize = '25px 25px';
-	button.style.width = '25px';
-	button.style.height = '25px';
-	button.style.cursor = 'pointer';
-	button.id = 'plotter';
+	options: {
+		position: 'topleft',
+	},
+	onAdd(map) {
+		const button = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom track-plotter');
+		button.title = 'Measure / plot route manually';
+		button.style.backgroundColor = 'white';
+		button.style.backgroundSize = '25px 25px';
+		button.style.width = '25px';
+		button.style.height = '25px';
+		button.style.cursor = 'pointer';
+		button.id = 'plotter';
 
-	const smallIcon = L.divIcon({
-		className: 'divicon',
-		iconSize: [10, 10], // size of the icon
-		popupAnchor: [0, -10], // point from which the popup should open relative to the iconAnchor
-	});
-
-	button.onclick = () => {
-		L.Control.InfoWindow = L.Control.extend({
-			onAdd(map) {
-			const divInfo = L.DomUtil.create('div', 'info-window');
-			divInfo.id = 'divInfo';
-
-			L.DomEvent.on(divInfo, 'contextmenu', L.DomEvent.stopPropagation)
-				.disableClickPropagation(divInfo);
-			return divInfo;
-			},
+		const smallIcon = L.divIcon({
+			className: 'divicon',
+			iconSize: [10, 10], // size of the icon
+			popupAnchor: [0, -10], // point from which the popup should open relative to the iconAnchor
 		});
-		L.control.infoWindow = (options) => {
+
+		button.onclick = () => {
+			L.Control.InfoWindow = L.Control.extend({
+				onAdd(map) {
+					const divInfo = L.DomUtil.create('div', 'info-window');
+					divInfo.id = 'divInfo';
+
+					L.DomEvent.on(divInfo, 'contextmenu', L.DomEvent.stopPropagation)
+						.disableClickPropagation(divInfo);
+					return divInfo;
+				},
+			});
+			L.control.infoWindow = (options) => {
 				return new L.Control.InfoWindow(options);
-		};
-		L.control.infoWindow({ position: 'topright' }).addTo(map);
+			};
+			L.control.infoWindow({ position: 'topright' }).addTo(map);
 
-//		remove these buttons so they don't confuse things
-		document.getElementById('ors-router').style = 'display:none';
-		document.getElementById('plotter').style = 'display:none';
-// Set cursors
-//		document.getElementById('map').style.cursor = 'default';
+			//		remove these buttons so they don't confuse things
+			document.getElementById('ors-router').style = 'display:none';
+			document.getElementById('plotter').style = 'display:none';
+			// Set cursors
+			//		document.getElementById('map').style.cursor = 'default';
 
-//		onmousedown = () => {
-//			document.getElementById('map').style.cursor = 'move';
-//		}
-//		onmouseup = () => {
-//			document.getElementById('map').style.cursor = 'default';
-//		}
+			//		onmousedown = () => {
+			//			document.getElementById('map').style.cursor = 'move';
+			//		}
+			//		onmouseup = () => {
+			//			document.getElementById('map').style.cursor = 'default';
+			//		}
 
-		const dlBtn = L.DomUtil.create('button', 'button', divInfo);
-		dlBtn.innerHTML = 'Save as GPX';
+			const dlBtn = L.DomUtil.create('button', 'button', divInfo);
+			dlBtn.innerHTML = 'Save as GPX';
 
-		const elev = L.DomUtil.create('button', 'button', divInfo);
-		elev.innerHTML = 'Elevation';
+			const elev = L.DomUtil.create('button', 'button', divInfo);
+			elev.innerHTML = 'Elevation';
 
-		const reset = L.DomUtil.create('button', 'button', divInfo);
-		reset.innerHTML = 'Reset';
+			const reset = L.DomUtil.create('button', 'button', divInfo);
+			reset.innerHTML = 'Reset';
 
-		L.DomEvent.on(elev, 'click', () => {
-			let wpt = [];
-			for (let i = 0; i < wpts.length; i++) {
-			wpt.push(Object.values(wpts[i]).reverse());
-			}
-
-			wpt = `[[${wpt.join('],[')}]]`;
-
-			const request = new XMLHttpRequest();
-			request.open('POST', `https://api.openrouteservice.org/elevation/line`);
-			request.setRequestHeader('Accept', 'application/json');
-			request.setRequestHeader('Content-Type', 'application/json');
-			request.setRequestHeader('Authorization', config.orsAPI);
-			request.onreadystatechange = function() {
-				if (this.readyState === 4 && request.status === 200) {
-					const data = JSON.parse(request.response);
-					const coords = [];
-					for (let i = 0; i < data.geometry.length; i++) {
-					const coord = {};
-					coord.alt = data.geometry[i][2];
-					coord.lat = data.geometry[i][1];
-					coord.lng = data.geometry[i][0];
-					coords.push(coord);
-					}
-
-					// Elevation diagram
-					// Get rid of previous chart
-					if (document.getElementById('elevation-div')) {
-						L.DomUtil.remove(document.getElementById('elevation-div'));
-					}
-
-					const el = L.control.elevation();
-					el.addTo(map);
-					el.addData(coords);
+			L.DomEvent.on(elev, 'click', () => {
+				let wpt = [];
+				for (let i = 0; i < wpts.length; i++) {
+					wpt.push(Object.values(wpts[i]).reverse());
 				}
-			}
-			const body = `{"format_in": "polyline","format_out": "polyline","geometry": ${wpt}}`;
-			request.send(body);
-		});
+
+				//wpt = `[[${wpt.join('],[')}]]`;
+
+				fetch(`https://api.openrouteservice.org/elevation/line`, {
+					method: 'POST',
+					headers: {
+						'Accept': 'application/json',
+						'Content-Type': 'application/json',
+						'Authorization': config.orsAPI
+					},
+					body: JSON.stringify({
+						'format_in': 'polyline',
+						'format_out': 'polyline',
+						'geometry': wpt
+					})
+				})
+					.then(response => response.json())
+					.then(data => {console.log(data)
+						const coords = [];
+						for (let i = 0; i < data.geometry.length; i++) {
+							const coord = {};
+							coord.alt = data.geometry[i][2];
+							coord.lat = data.geometry[i][1];
+							coord.lng = data.geometry[i][0];
+							coords.push(coord);
+						}
+
+						// Elevation diagram
+						// Get rid of previous chart
+						if (document.getElementById('elevation-div')) {
+							L.DomUtil.remove(document.getElementById('elevation-div'));
+						}
+
+						const el = L.control.elevation();
+						el.addTo(map);
+						el.addData(coords);
+					})
+			})
+			
+
+		//		const request = new XMLHttpRequest();
+		//		request.open('POST', `https://api.openrouteservice.org/elevation/line`);
+		//		request.setRequestHeader('Accept', 'application/json');
+		//		request.setRequestHeader('Content-Type', 'application/json');
+		//		request.setRequestHeader('Authorization', config.orsAPI);
+		//		request.onreadystatechange = function() {
+		//			if (this.readyState === 4 && request.status === 200) {
+		//				const data = JSON.parse(request.response);
+		//				const coords = [];
+		//				for (let i = 0; i < data.geometry.length; i++) {
+		//					const coord = {};
+		//					coord.alt = data.geometry[i][2];
+		//					coord.lat = data.geometry[i][1];
+		//					coord.lng = data.geometry[i][0];
+		//					coords.push(coord);
+		//				}
+
+		//				// Elevation diagram
+		//				// Get rid of previous chart
+		//				if (document.getElementById('elevation-div')) {
+		//					L.DomUtil.remove(document.getElementById('elevation-div'));
+		//				}
+
+		//				const el = L.control.elevation();
+		//				el.addTo(map);
+		//				el.addData(coords);
+		//			}
+		//		}
+		//	const body = `{"format_in": "polyline","format_out": "polyline","geometry": ${wpt}}`;
+		//	request.send(body);
+	//	});
 
 		L.DomEvent.on(reset, 'click', () => {
 			if (typeof el !== 'undefined') el.remove();
@@ -212,13 +249,13 @@ L.Control.CreateRoute = L.Control.extend({
 		function deletepoint(e) {
 			latlng = e.target.getLatLng();
 			for (let i = 0; i < wpts.length; i++) {
-			if (wpts[i].lat === latlng.lat && wpts[i].lng === latlng.lng) {
-				wpts.splice(i, 1);
+				if (wpts[i].lat === latlng.lat && wpts[i].lng === latlng.lng) {
+					wpts.splice(i, 1);
+				}
 			}
-			}
-				map.removeLayer(e.target);
-				polyline.setLatLngs(wpts);
-				getDistance();
+			map.removeLayer(e.target);
+			polyline.setLatLngs(wpts);
+			getDistance();
 		}
 
 		function insertpoint(e) {
@@ -250,7 +287,7 @@ L.Control.CreateRoute = L.Control.extend({
 		L.DomEvent.on(dlBtn, 'click', () => {
 			let fileName = prompt('Please enter a name for the route');
 			if (fileName === '' || fileName === null) {
-			fileName = 'GPX Track';
+				fileName = 'GPX Track';
 			}
 			let gpxtrack = '</name>\n<trkseg>\n';
 			for (let i = 0; i < wpts.length; i++) {
@@ -259,9 +296,9 @@ L.Control.CreateRoute = L.Control.extend({
 			gpxtrack += '</trkseg>\n</trk>\n</gpx>';
 
 			const header = '<?xml version="1.0" encoding="UTF-8" standalone="no" ?>\n<gpx xmlns=' +
-			'"http://www.topografix.com/GPX/1/1"  creator="DonMaps" version="1.1" xmlns:xsi=' +
-			'"http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation=' +
-			'"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">\n<trk>\n<name>';
+				'"http://www.topografix.com/GPX/1/1"  creator="DonMaps" version="1.1" xmlns:xsi=' +
+				'"http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation=' +
+				'"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">\n<trk>\n<name>';
 
 			const gpx = header + fileName + gpxtrack;
 			const a = document.createElement('a');
@@ -279,10 +316,10 @@ L.Control.CreateRoute = L.Control.extend({
 	L.DomEvent
 	.on(button, 'click', L.DomEvent.stopPropagation);
 	return button;
-  },
+},
 });
 L.control.createRoute = (options) => {
-  return new L.Control.CreateRoute(options);
+	return new L.Control.CreateRoute(options);
 };
 L.control.createRoute().addTo(map);
 

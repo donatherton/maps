@@ -98,32 +98,43 @@ function initmap() {
 		document.getElementById('map').style.cursor = 'default';
 	}
 
-	function geoData(xhttp) {
-		//let i;
-		let coords = [];
+	//function geoData(geoLabel) {
+	//	//let i;
+	//	//let coords = [];
 
-		//	if (typeof(newMarker) !== 'undefined') {
-		//		if (map.hasLayer(newMarker)) map.removeLayer(newMarker);
-		//	}
-		const geolabel = JSON.parse(xhttp.response);
+	//	//	if (typeof(newMarker) !== 'undefined') {
+	//	//		if (map.hasLayer(newMarker)) map.removeLayer(newMarker);
+	//	//	}
+	//	//const geolabel = JSON.parse(xhttp.response);
 
-		coords = [geolabel[0].lat, geolabel[0].lon];
-		L.popup()
-			.setContent('<a href="https://duckduckgo.com/?q='
-				+ `${geolabel[0].display_name}" target="_blank">${geolabel[0].display_name}</a>`)
-			.setLatLng(coords)
-			.openOn(map);
-	}
+	//	const coords = [geoLabel[0].lat, geoLabel[0].lon];
+	//	L.popup()
+	//		.setContent('<a href="https://duckduckgo.com/?q='
+	//			+ `${geoLabel[0].display_name}" target="_blank">${geoLabel[0].display_name}</a>`)
+	//		.setLatLng(coords)
+	//		.openOn(map);
+	//}
 
 	function geoDataRequest(url) {
-		const xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = function() {
-			if (this.readyState === 4 && this.status === 200) {
-				geoData(xhttp);
-			}
-		};
-		xhttp.open('GET', url, true);
-		xhttp.send();
+		fetch(url)
+			.then(response => response.json())
+			.then(geoLabel => {
+				const coords = [geoLabel[0].lat, geoLabel[0].lon];
+				L.popup()
+					.setContent('<a href="https://duckduckgo.com/?q='
+						+ `${geoLabel[0].display_name}" target="_blank">${geoLabel[0].display_name}</a>`)
+					.setLatLng(coords)
+					.openOn(map);
+			})
+		//geoData(data));
+		//	const xhttp = new XMLHttpRequest();
+		//	xhttp.onreadystatechange = function() {
+		//		if (this.readyState === 4 && this.status === 200) {
+		//			geoData(xhttp);
+		//		}
+		//	};
+		//	xhttp.open('GET', url, true);
+		//	xhttp.send();
 	}
 
 	function geocode(e) {
@@ -134,12 +145,11 @@ function initmap() {
 			.openOn(map);
 		document.getElementById('geo').onclick = () => {
 			e.preventDefault;
-			const geoURL = `https://nominatim.openstreetmap.org/?addressdetails=1&q=${e.latlng.lat},${e.latlng.lng}&format=json&limit=1`;
-			geoDataRequest(geoURL);
+			const url = `https://nominatim.openstreetmap.org/?addressdetails=1&q=${e.latlng.lat},${e.latlng.lng}&format=json&limit=1`;
+			geoDataRequest(url);
 			map.closePopup(infoPopup);
 		};
 	}
-
 	map.on('contextmenu', geocode);
 
 	//  map.on('click', () => {

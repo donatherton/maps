@@ -55,25 +55,39 @@ L.Control.PlaceSearch = L.Control.extend({
 			}
 
 			const searchUrl = `https://nominatim.openstreetmap.org/?format=json&addressdetails=1&q=${geosearch}&format=json&limit=5&email=don@donatherton.co.uk`;
-
-			const xhttp = new XMLHttpRequest();
-			xhttp.onreadystatechange = () => {
-				if (this.readyState === 4 && this.status === 200) {
-					const results = JSON.parse(xhttp.response);
+			fetch(searchUrl)
+				.then(response => response.json())
+				.then(results=> {
 					if (results.length > 0) {
 						resultsTable = L.DomUtil.create('div', 'info-window-inner', button);
 						resultsTable.id = 'searchDropdown1';
-						for (let i = 0; i < results.length; i++) {
-							const resultLine = L.DomUtil.create('p', '', resultsTable);
+						//for (let i = 0; i < results.length; i++)
+						results.forEach((resultLine, i) => {
+							 resultLine = L.DomUtil.create('p', '', resultsTable);
 							resultLine.innerHTML = results[i].display_name;
 							addRowListener(results[i], resultLine);
-						}
-
+						})
 					} else searchInput.value = 'No results';
-				}
-			};
-			xhttp.open('GET', searchUrl, true);
-			xhttp.send();
+			})
+
+		//	const xhttp = new XMLHttpRequest();
+		//	xhttp.onreadystatechange = () => {
+		//		if (this.readyState === 4 && this.status === 200) {
+		//			const results = JSON.parse(xhttp.response);
+		//			if (results.length > 0) {
+		//				resultsTable = L.DomUtil.create('div', 'info-window-inner', button);
+		//				resultsTable.id = 'searchDropdown1';
+		//				for (let i = 0; i < results.length; i++) {
+		//					const resultLine = L.DomUtil.create('p', '', resultsTable);
+		//					resultLine.innerHTML = results[i].display_name;
+		//					addRowListener(results[i], resultLine);
+		//				}
+
+		//			} else searchInput.value = 'No results';
+		//		}
+		//	};
+		//	xhttp.open('GET', searchUrl, true);
+		//	xhttp.send();
 		}
 
 		map.on('mousedown', () => {
