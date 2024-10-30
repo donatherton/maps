@@ -1,8 +1,9 @@
 'use strict'
 let map;
 
-// If url contains centre and zoom
-const centreAndZoom = () => {
+/* If url contains centre and zoom. Uses a closure for encapsulation
+ * and to stop function being called twice */
+function centreAndZoom() {
 	const $_GET = {};
 	const args = location.search.substr(1).split(/&/);
 	let centre, zoom;
@@ -22,7 +23,13 @@ const centreAndZoom = () => {
 		centre = config.defaultLocation;
 		zoom = config.defaultZoom;
 	}
-	return [centre, zoom];
+	function getCentre() {
+		return centre;
+	}
+	function getZoom() {
+		return zoom;
+	}
+	return { getCentre, getZoom };
 }
 
 function initmap() {
@@ -56,10 +63,10 @@ function initmap() {
 
 	//  const tileUrl = L.tileLayer('https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}', { id: 'elev', 
 	//  attribution: '<a href="https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer" target="_blank">USGS</a>' });
-
+	const cz = centreAndZoom();
 	map = new L.Map('map', {
-		center: centreAndZoom()[0],
-		zoom: centreAndZoom()[1],
+		center: cz.getCentre(),
+		zoom: cz.getZoom(),
 		layers: [osm],
 	});
 
@@ -110,7 +117,7 @@ function initmap() {
 
 	function geoDataRequest(url) {
 		const xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = () => {
+		xhttp.onreadystatechange = function() {
 			if (this.readyState === 4 && this.status === 200) {
 				geoData(xhttp);
 			}
