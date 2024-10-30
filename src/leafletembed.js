@@ -1,37 +1,6 @@
 'use strict'
 let map;
 
-/* If url contains centre and zoom. Uses a closure for encapsulation
- * and to stop function being called twice */
-function centreAndZoom() {
-	const $_GET = {};
-	const args = location.search.substr(1).split(/&/);
-	let centre, zoom;
-	if (args.length > 1) {
-		let tmp = args[0].split(/=/);
-		if (tmp[0] !== '') {
-			const comp = decodeURIComponent(tmp.slice(1).join('').replace('+', ' '));
-			centre = comp.replace('LatLng(', '');
-			centre = centre.replace(')', '');
-			centre = centre.split(/,/);
-		}
-		tmp = args[1].split(/=/);
-		if (tmp[0] !== '') {
-			zoom = decodeURIComponent(tmp.slice(1).join('').replace('+', ' '));
-		}
-	} else {
-		centre = config.defaultLocation;
-		zoom = config.defaultZoom;
-	}
-	function getCentre() {
-		return centre;
-	}
-	function getZoom() {
-		return zoom;
-	}
-	return { getCentre, getZoom };
-}
-
 function initmap() {
 	// create the tile layers with correct attribution
 	const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -62,11 +31,11 @@ function initmap() {
 			maxZoom: 21 });
 	//  const tileUrl = L.tileLayer('https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x}', { id: 'elev', 
 	//  attribution: '<a href="https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer" target="_blank">USGS</a>' });
-
-	const cz = centreAndZoom();
+	
+	const cz = centreAndZoom()
 	map = new L.Map('map', {
-		center: cz.getCentre(),
-		zoom: cz.getZoom(),
+		center: cz[0],
+		zoom: cz[1],
 		layers: [osm],
 	});
 
@@ -97,6 +66,30 @@ function initmap() {
 	onmouseup = () => {
 		document.getElementById('map').style.cursor = 'default';
 	}
+
+/* If url contains centre and zoom, default values if not */
+function centreAndZoom() { 
+	const $_GET = {};
+	const args = location.search.substr(1).split(/&/);
+	let centre, zoom;
+	if (args.length > 1) {
+		let tmp = args[0].split(/=/);
+		if (tmp[0] !== '') {
+			const comp = decodeURIComponent(tmp.slice(1).join('').replace('+', ' '));
+			centre = comp.replace('LatLng(', '');
+			centre = centre.replace(')', '');
+			centre = centre.split(/,/);
+		}
+		tmp = args[1].split(/=/);
+		if (tmp[0] !== '') {
+			zoom = decodeURIComponent(tmp.slice(1).join('').replace('+', ' '));
+		}
+	} else {
+		centre = config.defaultLocation;
+		zoom = config.defaultZoom;
+	}
+	return [centre, zoom];
+}
 
 	function geoDataRequest(url) {
 		fetch(url)
