@@ -3,6 +3,9 @@ html, body {
 	height: 100%;
 	margin: 0;
 }
+* {
+	box-sizing: border-box;
+}
 #map {
 	height: 100%;
 }
@@ -29,16 +32,18 @@ html, body {
 	padding: 3px;
 }
 .leaflet-control {
-/*clear: none;*/
+	/*clear: none;*/
 }
 .leaflet-popup-pane {
 	opacity: 0.9;
 }
 .location-button {
 	background-image: url(../images/location.png);
+	background-position: center;
 }
 .fullscreen {
 	background-image: url(../images/fullscreen.png);
+	background-position: center;
 }
 .ors-routing {
 	background-image: url(../images/routing_icon.png);
@@ -46,6 +51,7 @@ html, body {
 }
 .ors-routing:disabled {
 	opacity: 0.5;
+	cursor: not-allowed !important;
 }
 .load_button {
 	text-align: center;
@@ -53,9 +59,11 @@ html, body {
 }
 .reload {
 	background-image: url(../images/view-refresh.png);
+	background-position: center;
 }
 .edit-gpx {
 	background-image: url(../images/edit-icon.png);
+	background-position: center;
 }
 .track-plotter {
 	background-image: url(../images/routing-icon.png);
@@ -63,6 +71,7 @@ html, body {
 }
 .track-plotter:disabled {
 	opacity: 0.5;
+	cursor: not-allowed !important;
 }
 .modal {
 	display: none; /* Hidden by default */
@@ -89,7 +98,7 @@ html, body {
 /* The Close Button */
 .close {
 	color: #aaa;
-/*	float: right;*/
+	/*	float: right;*/
 	font-size: 28px;
 	font-weight: bold;
 }
@@ -115,51 +124,51 @@ html, body {
 	border-radius: 15px;
 }
 .endicon {
-background-color: #f00;
-border: 2px solid #005;
-border-radius: 15px;
+	background-color: #f00;
+	border: 2px solid #005;
+	border-radius: 15px;
 }
 .leaflet-routing-alt, .leaflet-routing-geocoders {
 	max-height: 160px;
 }
 .info-window {
-max-width: 320px;
-background: rgba(255,255,255,.8);
-box-shadow: 4px 4px 4px 4px rgba(0, 0, 0, 0.1), 0 4px 4px 4px rgba(0, 0, 0, 0.1);
-border: 1px #fff;
-border-radius: 5px;
+	max-width: 320px;
+	background: rgba(255,255,255,.8);
+	box-shadow: 4px 4px 4px 4px rgba(0, 0, 0, 0.1), 0 4px 4px 4px rgba(0, 0, 0, 0.1);
+	border: 1px #fff;
+	border-radius: 5px;
 }
 .info-window-inner {
-width: 100%;
-overflow: auto;
-max-height: 165px;
-padding: 5px
+	width: 100%;
+	overflow: auto;
+	max-height: 165px;
+	padding: 5px
 }
 .elev-window {
-background: rgba(156, 194, 34, 0.2);
-width: 95vw;
-max-width: 700px;
-max-height: 100px;
-box-shadow: 4px 4px 4px 4px rgba(0, 0, 0, 0.1), 0 4px 4px 4px rgba(0, 0, 0, 0.1);
-border: 1px #fff;
-border-radius: 5px;
+	background: rgba(156, 194, 34, 0.2);
+	width: 95vw;
+	max-width: 700px;
+	max-height: 100px;
+	box-shadow: 4px 4px 4px 4px rgba(0, 0, 0, 0.1), 0 4px 4px 4px rgba(0, 0, 0, 0.1);
+	border: 1px #fff;
+	border-radius: 5px;
 }
 p {
 	width: 100%;
-/*padding: 3px;*/
+	/*padding: 3px;*/
 	margin: 0;
 }
 p:hover {
 	background-color:#ddd
 }
 div.input-elems p {
-background-color: #fff;
+	background-color: #fff;
 }
 .info-window-input {
-width: 90%;
+	width: 90%;
 }
 .inputElems {
-margin: 0;
+	margin: 0;
 }
 #searchDropdown {
 	position:absolute;
@@ -196,13 +205,14 @@ margin: 0;
 	position: absolute;
 	top: -5px;
 	left: 27px;
-	height: 25px;
+	height: 40px;
 	padding: 5px;
 	width: 0;
 	overflow: hidden;
 }
 #search-input {
 	width: 95%;
+	height: 100%;
 	display: block;
 }
 .search-button {
