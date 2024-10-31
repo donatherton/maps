@@ -9,7 +9,6 @@ html, body {
 #map {
 	height: 100%;
 }
-#route-planner {display: none;}
 .button {
 	background-color: #fff;
 	border: 1px solid #ccc;

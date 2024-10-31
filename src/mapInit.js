@@ -97,19 +97,6 @@
 			return [centre, zoom];
 		}
 
-		function geoDataRequest(url) {
-			fetch(url)
-				.then(response => response.json())
-				.then(geoLabel => {
-					const coords = [geoLabel[0].lat, geoLabel[0].lon];
-					L.popup()
-						.setContent('<a href="https://duckduckgo.com/?q='
-							+ `${geoLabel[0].display_name}" target="_blank">${geoLabel[0].display_name}</a>`)
-						.setLatLng(coords)
-						.openOn(map);
-				})
-		}
-
 		function geocode(e) {
 			const infoPopup = L.popup();
 			infoPopup
@@ -118,8 +105,8 @@
 				.openOn(map);
 			document.getElementById('geo').onclick = () => {
 				e.preventDefault;
-				const url = `https://nominatim.openstreetmap.org/?addressdetails=1&q=${e.latlng.lat},${e.latlng.lng}&format=json&limit=1`;
-				geoDataRequest(url);
+				//const url = `https://nominatim.openstreetmap.org/?addressdetails=1&q=${e.latlng.lat},${e.latlng.lng}&format=json&limit=1`;
+				geoDataRequest(e);
 				map.closePopup(infoPopup);
 			};
 		}
@@ -137,7 +124,7 @@
 				const reloadButton = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom reload');
 				reloadButton.setAttribute('title', 'Reload map at this location and zoom');
 				reloadButton.style.backgroundColor = 'white';
-				reloadButton.style.backgroundSize = '35px 35px';
+				reloadButton.style.backgroundSize = '95%';
 				reloadButton.style.width = '35px';
 				reloadButton.style.height = '35px';
 				reloadButton.style.cursor = 'pointer';
@@ -167,6 +154,18 @@
 		};
 		L.control.reload({ position: 'topleft' }).addTo(map);
 	})()// end initmap
+
+	function geoDataRequest(e) {
+		fetch(`https://nominatim.openstreetmap.org/?addressdetails=1&q=${e.latlng.lat},${e.latlng.lng}&format=json&limit=1`)
+			.then(response => response.json())
+			.then(geoLabel => {
+				const coords = [geoLabel[0].lat, geoLabel[0].lon];
+				L.popup()
+					.setContent(`<a href="https://duckduckgo.com/?q=${geoLabel[0].display_name}" target="_blank">${geoLabel[0].display_name}</a>`)
+					.setLatLng(coords)
+					.openOn(map);
+			})
+	}
 
 	/*********************/
 	//*search
@@ -416,19 +415,6 @@
 						routeRequest();
 						//					geoRequest(latlng, thisMarker, 'change');
 					}
-				}
-
-				function geoDataRequest(e) {
-					fetch(`https://nominatim.openstreetmap.org/?addressdetails=1&q=${e.latlng.lat},${e.latlng.lng}&format=json&limit=1`)
-						.then(response => response.json())
-						.then(geoLabel => {
-							const coords = [geoLabel[0]['lat'],geoLabel[0]['lon']];
-							L.popup()
-								.setContent(`<a href="https://duckduckgo.com/?q=`
-									+ `${geoLabel[0]['display_name']}" target="_blank">${geoLabel[0]['display_name']}</a>`)
-								.setLatLng(coords)
-								.openOn(map);
-						})
 				}
 
 				function popup(e) {
