@@ -69,7 +69,7 @@ function initmap() {
 
 /* If url contains centre and zoom, default values if not */
 function centreAndZoom() { 
-	const args = location.search.substr(1).split(/&/);console.log(args)
+	const args = location.search.substr(1).split(/&/);
 	let centre, zoom;
 	if (args.length > 1) {
 		let tmp = args[0].split(/=/);

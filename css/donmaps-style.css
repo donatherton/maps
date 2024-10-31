@@ -42,6 +42,10 @@ html, body {
 }
 .ors-routing {
 	background-image: url(../images/routing_icon.png);
+	background-position: center;
+}
+.ors-routing:disabled {
+	opacity: 0.5;
 }
 .load_button {
 	text-align: center;
@@ -55,6 +59,10 @@ html, body {
 }
 .track-plotter {
 	background-image: url(../images/routing-icon.png);
+	background-position: center;
+}
+.track-plotter:disabled {
+	opacity: 0.5;
 }
 .modal {
 	display: none; /* Hidden by default */
