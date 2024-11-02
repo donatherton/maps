@@ -7,28 +7,28 @@
     /* Set up map */
     // create the tile layers with correct attribution
     const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        { id: 'osm',
-          attribution: 'Map data &copy;  <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' });
+      { id: 'osm',
+        attribution: 'Map data &copy;  <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' });
     const outdoors = L.tileLayer(`https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=${config.tfAPI}`,
-        { id: 'outdoors',
-          attribution: 'Map data &copy; <a href=https://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' });
+      { id: 'outdoors',
+        attribution: 'Map data &copy; <a href=https://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' });
     const cycle = L.tileLayer(`https://tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey=${config.tfAPI}`,
-        { id: 'cycle',
-          attribution: 'Map data &copy; <a href=https://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' });
+      { id: 'cycle',
+        attribution: 'Map data &copy; <a href=https://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' });
     const sea =  L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png',
-        { id: 'sea',
-          attribution: 'Map data: &copy; <a href="https://www.openseamap.org">OpenSeaMap</a> contributors' });
+      { id: 'sea',
+        attribution: 'Map data: &copy; <a href="https://www.openseamap.org">OpenSeaMap</a> contributors' });
     const transport =  L.tileLayer(`https://tile.thunderforest.com/transport/{z}/{x}/{y}.png?apikey=${config.tfAPI}`,
-        { id: 'transport',
-          attribution: 'Map data &copy; <a href=https://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' });
+      { id: 'transport',
+        attribution: 'Map data &copy; <a href=https://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' });
     const topo =  L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
-        { id: 'topo',
-          attribution: 'Map data &copy; <a href=https://opentopomap.org//">OpenTopoMap</a>',
-          maxZoom: 21 });
+      { id: 'topo',
+        attribution: 'Map data &copy; <a href=https://opentopomap.org//">OpenTopoMap</a>',
+        maxZoom: 21 });
     const google =  L.tileLayer('https://mt0.google.com/vt/lyrs=y&hl=en&x={x}&s=&y={y}&z={z}',
-        { id: 'streets',
-          attribution: '<a href="https://mapbox.com/about/maps" class="mapbox-wordmark" target="_blank">Mapbox</a> &copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> <strong><a href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a></strong>',
-          maxZoom: 21 });
+      { id: 'streets',
+        attribution: '<a href="https://mapbox.com/about/maps" class="mapbox-wordmark" target="_blank">Mapbox</a> &copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> <strong><a href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a></strong>',
+        maxZoom: 21 });
 
     const cz = centreAndZoom()
     map = new L.Map('map', {
@@ -111,10 +111,7 @@
         reloadButton.style.height = '35px';
         reloadButton.style.cursor = 'pointer';
 
-        L.DomEvent.on(reloadButton, 'click', L.DomEvent.stopPropagation);
-        L.DomEvent.on(reloadButton, 'contextmenu', L.DomEvent.stopPropagation);
-        L.DomEvent.on(reloadButton, 'mousedown', L.DomEvent.stopPropagation);
-        L.DomEvent.on(reloadButton, 'mousewheel', L.DomEvent.stopPropagation);
+        stopEventPropagation(reloadButton);
 
         reloadButton.onclick = () => {
           const centre = map.getCenter();
@@ -148,6 +145,10 @@
       })
   }
 
+  function stopEventPropagation(elem) {
+    L.DomEvent.on(elem, 'click contextmenu mousedown mousewheel', L.DomEvent.stopPropagation);
+  }
+
   /*********************/
   //*search
   L.Control.PlaceSearch = L.Control.extend({
@@ -164,19 +165,13 @@
       button.style.height = '35px';
       button.style.cursor = 'pointer';
 
-      L.DomEvent.on(button, 'click', L.DomEvent.stopPropagation);
-      L.DomEvent.on(button, 'contextmenu', L.DomEvent.stopPropagation);
-      L.DomEvent.on(button, 'mousedown', L.DomEvent.stopPropagation);
-      L.DomEvent.on(button, 'mousewheel', L.DomEvent.stopPropagation);
+      stopEventPropagation(button);
 
       L.DomEvent.on(button, 'click', () => {
         const searchDiv = L.DomUtil.create('div', 'info-window', button);
         searchDiv.id = 'search-div';
         searchDiv.style.width = '245px';
-
-        L.DomEvent.on(searchDiv, 'click', L.DomEvent.stopPropagation);
-        L.DomEvent.on(searchDiv, 'contextmenu', L.DomEvent.stopPropagation);
-        L.DomEvent.on(searchDiv, 'mousedown', L.DomEvent.stopPropagation);
+        stopEventPropagation(searchDiv);
 
         const searchInput = L.DomUtil.create('input', 'info-window-input', searchDiv);
         searchInput.type = 'text';
@@ -234,9 +229,7 @@
           }
         });
 
-      }); // button click  function
-
-      L.DomEvent.on(button, 'click', L.DomEvent.stopPropagation);
+      });
       return button;
     },
   });
@@ -262,7 +255,7 @@
       button.style.cursor = 'pointer';
       button.id = 'ors-router';
 
-      L.DomEvent.on(button, 'contextmenu', L.DomEvent.stopPropagation);
+      stopEventPropagation(button);
 
       L.DomEvent.on(button, 'click', () => {
         let route;
@@ -287,8 +280,8 @@
             divInfo.style.width = '80vw';
             divInfo.style.height = 'auto';
 
-            L.DomEvent.on(divInfo, 'contextmenu', L.DomEvent.stopPropagation)
-              .disableClickPropagation(divInfo);
+            stopEventPropagation(divInfo);
+
             return divInfo;
           },
         });
@@ -661,10 +654,7 @@
             }
           }
         }));
-        L.DomEvent.on(profileSelect, 'click', L.DomEvent.stopPropagation);
-      }); // L.DomEvent.on(button, 'click', () => {
-
-      L.DomEvent.on(button, 'click', L.DomEvent.stopPropagation);
+      });
       return button;
     },
   });
@@ -689,7 +679,7 @@
       button.style.cursor = 'pointer';
       button.id = 'plotter';
 
-      L.DomEvent.on(button, 'contextmenu', L.DomEvent.stopPropagation);
+      stopEventPropagation(button);
 
       const smallIcon = L.divIcon({
         className: 'divicon',
@@ -703,8 +693,8 @@
             const divInfo = L.DomUtil.create('div', 'info-window');
             divInfo.id = 'divInfo';
 
-            L.DomEvent.on(divInfo, 'contextmenu', L.DomEvent.stopPropagation)
-              .disableClickPropagation(divInfo);
+            stopEventPropagation(divInfo);
+
             return divInfo;
           },
         });
@@ -943,9 +933,6 @@
           document.body.removeChild(a);
         });
       };
-
-      L.DomEvent
-        .on(button, 'click', L.DomEvent.stopPropagation);
       return button;
     },
   });
@@ -978,7 +965,7 @@
       button.style.width = '35px';
       button.style.height = '35px';
 
-      L.DomEvent.on(button, 'contextmenu', L.DomEvent.stopPropagation);
+      stopEventPropagation(button);
 
       // Create an invisible file input
       const fileInput = L.DomUtil.create('input', '', button);
@@ -1072,9 +1059,6 @@
           reader.readAsText(file);
         };
       };
-
-      L.DomEvent
-        .on(button, 'click', L.DomEvent.stopPropagation);
       return button;
     },
   });
@@ -1098,7 +1082,7 @@
       button.style.height = '35px';
       button.style.cursor = 'pointer';
 
-      L.DomEvent.on(button, 'contextmenu', L.DomEvent.stopPropagation);
+      stopEventPropagation(button);
 
       let i = true;
       let id;
@@ -1130,9 +1114,6 @@
           i = true;
         }
       };
-
-      L.DomEvent
-        .on(button, 'click', L.DomEvent.stopPropagation);
       return button;
     },
   });
@@ -1160,7 +1141,7 @@
       button.style.height = '35px';
       button.style.cursor = 'pointer';
 
-      L.DomEvent.on(button, 'contextmenu', L.DomEvent.stopPropagation);
+      stopEventPropagation(button);
 
       button.onclick = function () {
         const isInFullScreen = (document.fullscreenElement && document.fullscreenElement !== null)
@@ -1189,8 +1170,8 @@
           document.msExitFullscreen();
         }
       };
-      L.DomEvent
-        .on(button, 'click', L.DomEvent.stopPropagation);
+      // L.DomEvent
+      // .on(button, 'click', L.DomEvent.stopPropagation);
       return button;
     },
   });
@@ -1241,8 +1222,8 @@
       const canvas = L.DomUtil.create('canvas', '', container);
       canvas.id = 'elevation';
 
-      L.DomEvent.on(container, 'contextmenu', L.DomEvent.stopPropagation)
-        .disableClickPropagation(container);
+      stopEventPropagation(container);
+
       return container;
     },
 
