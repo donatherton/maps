@@ -37,36 +37,67 @@ html, body {
 	opacity: 0.9;
 }
 .location-button {
+	width: 35px;
+	height: 35px;
 	background-image: url(../images/location.png);
 	background-position: center;
+	background-size: 95%;
+	background-color: white;
+	cursor: pointer;
 }
 .fullscreen {
+	width: 35px;
+	height: 35px;
 	background-image: url(../images/fullscreen.png);
 	background-position: center;
+	background-size: 95%;
+	background-color: white;
+	cursor: pointer;
+
 }
 .ors-routing {
+	width: 35px;
+	height: 35px;
 	background-image: url(../images/routing_icon.png);
 	background-position: center;
+	background-size: 95%;
+	background-color: white;
+	cursor: pointer;
 }
 .ors-routing:disabled {
 	opacity: 0.5;
-	cursor: not-allowed !important;
+	cursor: not-allowed;
 }
 .load_button {
+	width: 35px;
+	height: 35px;
+	background-color: white;
+	background-size: 95%;
+	cursor: pointer;
 	text-align: center;
 	padding: 2px 0;
 }
 .reload {
+	width: 35px;
+	height: 35px;
+	cursor: pointer;
 	background-image: url(../images/view-refresh.png);
 	background-position: center;
+	background-color: white;
+	background-size: 95%;
 }
-.edit-gpx {
+.load-gpx {
 	background-image: url(../images/edit-icon.png);
 	background-position: center;
 }
 .track-plotter {
+	width: 35px;
+	height: 35px;
 	background-image: url(../images/routing-icon.png);
 	background-position: center;
+	background-size: 95%;
+	background-color: white;
+	cursor: pointer;
 }
 .track-plotter:disabled {
 	opacity: 0.5;
@@ -96,7 +127,7 @@ html, body {
 }
 /* The Close Button */
 .close {
-	color: #aaa;
+	color: #000;
 	/*	float: right;*/
 	font-size: 28px;
 	font-weight: bold;
@@ -145,6 +176,7 @@ html, body {
 	resize: vertical;
 }
 .elev-window {
+	position: relative;
 	background: rgba(156, 194, 34, 0.2);
 	width: 95vw;
 	max-width: 700px;
@@ -216,11 +248,12 @@ div.input-elems p {
 	display: block;
 }
 .search-button {
+	width: 35px;
+	height: 35px;
 	display:block;
-	float:left;
-	width:30px;
-	height:30px;
 	background: url('../images/search-icon.png') no-repeat 2px 2px #fff;
+	background-size: 95%;
 	border-radius:4px;
+	cursor: pointer;
 }
 

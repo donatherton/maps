@@ -105,21 +105,15 @@
       onAdd(map) {
         const reloadButton = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom reload');
         reloadButton.setAttribute('title', 'Reload map at this location and zoom');
-        reloadButton.style.backgroundColor = 'white';
-        reloadButton.style.backgroundSize = '95%';
-        reloadButton.style.width = '35px';
-        reloadButton.style.height = '35px';
-        reloadButton.style.cursor = 'pointer';
 
         stopEventPropagation(reloadButton);
 
-        reloadButton.onclick = () => {
+        L.DomEvent.on(reloadButton, 'click', () => {
           const centre = map.getCenter();
-          //    centre = centre;
           const zoom = map.getZoom();
           const url = `index.html?coords=${centre}&zoom=${zoom}`;
           window.location.href = url;
-        };
+        });
         return reloadButton;
       },
 
@@ -132,7 +126,7 @@
       return new L.Control.Reload(option);
     };
     L.control.reload({ position: 'topleft' }).addTo(map);
-  })()// end initmap
+  })();
 
   function geoDataRequest(e) {
     fetch(`https://nominatim.openstreetmap.org/?addressdetails=1&q=${e.latlng.lat},${e.latlng.lng}&format=json&limit=1`)
@@ -159,11 +153,6 @@
     onAdd(map) {
       const button = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom search-button');
       button.title = 'Search';
-      button.style.backgroundColor = 'white';
-      button.style.backgroundSize = '95%';
-      button.style.width = '35px';
-      button.style.height = '35px';
-      button.style.cursor = 'pointer';
 
       stopEventPropagation(button);
 
@@ -171,6 +160,7 @@
         const searchDiv = L.DomUtil.create('div', 'info-window', button);
         searchDiv.id = 'search-div';
         searchDiv.style.width = '245px';
+        
         stopEventPropagation(searchDiv);
 
         const searchInput = L.DomUtil.create('input', 'info-window-input', searchDiv);
@@ -248,12 +238,7 @@
     onAdd(map) {
       const button = L.DomUtil.create('button', 'leaflet-bar leaflet-control leaflet-control-custom ors-routing');
       button.title = 'Get route with OpenRouteService';
-      button.style.backgroundColor = 'white';
-      button.style.backgroundSize = '95%';
-      button.style.width = '35px';
-      button.style.height = '35px';
-      button.style.cursor = 'pointer';
-      button.id = 'ors-router';
+       button.id = 'ors-router';
 
       stopEventPropagation(button);
 
@@ -672,11 +657,6 @@
     onAdd(map) {
       const button = L.DomUtil.create('button', 'leaflet-bar leaflet-control leaflet-control-custom track-plotter');
       button.title = 'Measure / plot route manually';
-      button.style.backgroundColor = 'white';
-      button.style.backgroundSize = '95%';
-      button.style.width = '35px';
-      button.style.height = '35px';
-      button.style.cursor = 'pointer';
       button.id = 'plotter';
 
       stopEventPropagation(button);
@@ -959,11 +939,6 @@
       const button = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom load_button');
       button.innerHTML = '<span style="font-size:10px; font-weight:bold">GPX</span>';
       button.title = 'Load a GPX file';
-      button.style.cursor = 'pointer';
-      button.style.backgroundColor = 'white';
-      button.style.backgroundSize = '95%';
-      button.style.width = '35px';
-      button.style.height = '35px';
 
       stopEventPropagation(button);
 
@@ -1074,13 +1049,7 @@
   L.Control.FindLocation = L.Control.extend({
     onAdd(map) {
       const button = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom location-button');
-      button.setAttribute('title', 'Get your current location');
-
-      button.style.backgroundColor = 'white';
-      button.style.backgroundSize = '95%';
-      button.style.width = '35px';
-      button.style.height = '35px';
-      button.style.cursor = 'pointer';
+      button.title = 'Get your current location';
 
       stopEventPropagation(button);
 
@@ -1133,13 +1102,7 @@
 
     onAdd(map) {
       const button = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom fullscreen');
-      button.setAttribute('title', 'Fullscreen');
-
-      button.style.backgroundColor = 'white';
-      button.style.backgroundSize = '95%';
-      button.style.width = '35px';
-      button.style.height = '35px';
-      button.style.cursor = 'pointer';
+      button.title = 'Fullscreen';
 
       stopEventPropagation(button);
 
