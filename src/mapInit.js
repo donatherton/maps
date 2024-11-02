@@ -1,9 +1,10 @@
+/* global L, config, Chart */
 'use strict';
-/* Put everything in an IIFE for encapsulation */
+
 (() => {
   let map;
-  //init map
   (() => {
+    /* Set up map */
     // create the tile layers with correct attribution
     const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
         { id: 'osm',
@@ -14,10 +15,6 @@
     const cycle = L.tileLayer(`https://tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey=${config.tfAPI}`,
         { id: 'cycle',
           attribution: 'Map data &copy; <a href=https://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' });
-    //  const esri =
-    //  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    //  { id: 'esri',
-    //  attribution: '&copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community' });
     const sea =  L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png',
         { id: 'sea',
           attribution: 'Map data: &copy; <a href="https://www.openseamap.org">OpenSeaMap</a> contributors' });
@@ -56,7 +53,6 @@
     // add layer control
     L.control.layers(baseMaps, overLayers).addTo(map);
 
-    //  let newMarker;
     // Set cursors
     document.getElementById('map').style.cursor = 'default';
 
@@ -90,7 +86,7 @@
       return [centre, zoom];
     }
 
-    function geoCode(e) {
+    function geoData(e) {
       const infoPopup = L.popup();
       infoPopup
         .setLatLng(e.latlng)
@@ -102,7 +98,7 @@
         map.closePopup(infoPopup);
       };
     }
-    map.on('contextmenu', geoCode);
+    map.on('contextmenu', geoData);
 
     // Reload button
     L.Control.Reload = L.Control.extend({
@@ -232,7 +228,7 @@
 
         L.DomEvent.addListener(searchInput, 'keyup', (e) => {
           L.DomEvent.stopPropagation(e);
-          if (e.keyCode === 13) { // alert();console.log(e.keyCode);
+          if (e.keyCode === 13) { 
             if (resultsTable) L.DomUtil.remove(resultsTable);
             geoSearch(searchInput.value);
           }
@@ -240,8 +236,7 @@
 
       }); // button click  function
 
-      L.DomEvent
-        .on(button, 'click', L.DomEvent.stopPropagation);
+      L.DomEvent.on(button, 'click', L.DomEvent.stopPropagation);
       return button;
     },
   });
@@ -259,13 +254,15 @@
     },
     onAdd(map) {
       const button = L.DomUtil.create('button', 'leaflet-bar leaflet-control leaflet-control-custom ors-routing');
-      button.title = 'Get route';
+      button.title = 'Get route with OpenRouteService';
       button.style.backgroundColor = 'white';
       button.style.backgroundSize = '95%';
       button.style.width = '35px';
       button.style.height = '35px';
       button.style.cursor = 'pointer';
       button.id = 'ors-router';
+
+      L.DomEvent.on(button, 'contextmenu', L.DomEvent.stopPropagation);
 
       L.DomEvent.on(button, 'click', () => {
         let route;
@@ -288,6 +285,7 @@
             divInfo.id = 'divInfo';
             divInfo.style.overflow = 'visible';
             divInfo.style.width = '80vw';
+            divInfo.style.height = 'auto';
 
             L.DomEvent.on(divInfo, 'contextmenu', L.DomEvent.stopPropagation)
               .disableClickPropagation(divInfo);
@@ -691,6 +689,8 @@
       button.style.cursor = 'pointer';
       button.id = 'plotter';
 
+      L.DomEvent.on(button, 'contextmenu', L.DomEvent.stopPropagation);
+
       const smallIcon = L.divIcon({
         className: 'divicon',
         iconSize: [10, 10], // size of the icon
@@ -978,6 +978,8 @@
       button.style.width = '35px';
       button.style.height = '35px';
 
+      L.DomEvent.on(button, 'contextmenu', L.DomEvent.stopPropagation);
+
       // Create an invisible file input
       const fileInput = L.DomUtil.create('input', '', button);
       fileInput.type = 'file';
@@ -1055,7 +1057,7 @@
           el.addTo(map);
           el.addData(coords);
         }
-      }// end loadGPX
+      }
 
       button.onclick = () => {
         fileInput.click();
@@ -1095,6 +1097,8 @@
       button.style.width = '35px';
       button.style.height = '35px';
       button.style.cursor = 'pointer';
+
+      L.DomEvent.on(button, 'contextmenu', L.DomEvent.stopPropagation);
 
       let i = true;
       let id;
@@ -1155,6 +1159,8 @@
       button.style.width = '35px';
       button.style.height = '35px';
       button.style.cursor = 'pointer';
+
+      L.DomEvent.on(button, 'contextmenu', L.DomEvent.stopPropagation);
 
       button.onclick = function () {
         const isInFullScreen = (document.fullscreenElement && document.fullscreenElement !== null)

@@ -140,8 +140,9 @@ html, body {
 .info-window-inner {
 	width: 100%;
 	overflow: auto;
-	max-height: 165px;
-	padding: 5px
+	max-height: 50vh;
+	padding: 5px;
+	resize: vertical;
 }
 .elev-window {
 	background: rgba(156, 194, 34, 0.2);
