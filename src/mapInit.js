@@ -144,26 +144,26 @@
   }
 
   function saveGpx(coords) {
-          let fileName = 'GPX-Track';
-          let gpxTrack = '</name>\n<trkseg>\n';
-          for (let i = 0; i < coords.length; i=i+1) {
-            gpxTrack += `<trkpt lat="${coords[i].lat}" lon="${coords[i].lng}">\n<ele>${coords[i].alt}</ele>\n</trkpt>\n`;
-          }
-          gpxTrack += '</trkseg>\n</trk>\n</gpx>';
+          let gpxTrack = '';
+          let el; // Is there elevation data?
+          coords.forEach(coord => {
+            coord.alt !== undefined ? el = `<ele>${coord.alt}</ele>` : el = '';
+            gpxTrack += `<trkpt lat="${coord.lat}" lon="${coord.lng}">${el}\n</trkpt>\n`;
+          });
 
-          const header = '<?xml version="1.0" encoding="UTF-8" standalone="no" ?>\n'
+          const gpx = '<?xml version="1.0" encoding="UTF-8" standalone="no" ?>\n'
             + '<gpx xmlns="http://www.topografix.com/GPX/1/1"  creator="DonMaps" version='
             + '"1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='
-            + '"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">\n<trk>\n<name>';
+            + '"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">\n'
+            + `<trk>\n<name>gpx-track</name>\n<trkseg>\n${gpxTrack}</trkseg>\n</trk>\n</gpx>`;
 
-          const gpx = header + fileName + gpxTrack;
           const a = document.createElement('a');
           const mimeType = 'text/csv;encoding:utf-8'; //mimeType || 'application/octet-stream';
           document.body.appendChild(a);
           a.href = URL.createObjectURL(new Blob([gpx], {
             type: mimeType,
           }));
-          a.download = fileName + '.gpx';
+          a.download = 'GPX-Track.gpx';
           a.click();
           document.body.removeChild(a);
         };
