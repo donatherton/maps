@@ -140,8 +140,33 @@
   }
 
   function stopEventPropagation(elem) {
-    L.DomEvent.on(elem, 'click contextmenu mousedown mousewheel', L.DomEvent.stopPropagation);
+    L.DomEvent.on(elem, 'click contextmenu mousedown mousewheel dblclick', L.DomEvent.stopPropagation);
   }
+
+  function saveGpx(coords) {
+          let fileName = 'GPX-Track';
+          let gpxTrack = '</name>\n<trkseg>\n';
+          for (let i = 0; i < coords.length; i=i+1) {
+            gpxTrack += `<trkpt lat="${coords[i].lat}" lon="${coords[i].lng}">\n<ele>${coords[i].alt}</ele>\n</trkpt>\n`;
+          }
+          gpxTrack += '</trkseg>\n</trk>\n</gpx>';
+
+          const header = '<?xml version="1.0" encoding="UTF-8" standalone="no" ?>\n'
+            + '<gpx xmlns="http://www.topografix.com/GPX/1/1"  creator="DonMaps" version='
+            + '"1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='
+            + '"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">\n<trk>\n<name>';
+
+          const gpx = header + fileName + gpxTrack;
+          const a = document.createElement('a');
+          const mimeType = 'text/csv;encoding:utf-8'; //mimeType || 'application/octet-stream';
+          document.body.appendChild(a);
+          a.href = URL.createObjectURL(new Blob([gpx], {
+            type: mimeType,
+          }));
+          a.download = fileName + '.gpx';
+          a.click();
+          document.body.removeChild(a);
+        };
 
   /*********************/
   //*search
@@ -553,35 +578,8 @@
           }
         }
 
-        L.DomEvent.on(dlButton, 'click', () => {
-          let fileName = prompt('Please enter a name for the route');
-
-          if (fileName === '' || fileName === null) {
-            fileName = 'GPX Track';
-          }
-          let gpxTrack = '</name>\n<trkseg>\n';
-          for (let i = 0; i < coords.length; i=i+1) {
-            gpxTrack += `<trkpt lat="${coords[i].lat}" lon="${coords[i].lng}">\n<ele>${coords[i].alt}</ele>\n</trkpt>\n`;
-          }
-          gpxTrack += '</trkseg>\n</trk>\n</gpx>';
-
-          const header = '<?xml version="1.0" encoding="UTF-8" standalone="no" ?>\n'
-            + '<gpx xmlns="http://www.topografix.com/GPX/1/1"  creator="DonMaps" version='
-            + '"1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='
-            + '"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">\n<trk>\n<name>';
-
-          const gpx = header + fileName + gpxTrack;
-          const a = document.createElement('a');
-          const mimeType = 'text/csv;encoding:utf-8'; //mimeType || 'application/octet-stream';
-          document.body.appendChild(a);
-          a.href = URL.createObjectURL(new Blob([gpx], {
-            type: mimeType,
-          }));
-          a.download = fileName + '.gpx';
-          a.click();
-          document.body.removeChild(a);
-        });
-
+        L.DomEvent.on(dlButton, 'click', () => saveGpx(coords));
+         
         L.DomEvent.on(closeButton, 'click', () => {
           if (divInfo.style.left === '100%') {
             divInfo.style.left = '0%';
@@ -716,14 +714,9 @@
           })
             .then(response => response.json())
             .then(data => {
-              const coords = [];
-              for (let i = 0; i < data.geometry.length; i++) {
-                const coord = {};
-                coord.alt = data.geometry[i][2];
-                coord.lat = data.geometry[i][1];
-                coord.lng = data.geometry[i][0];
-                coords.push(coord);
-              }
+              wpts.forEach((wpt, i) => {
+                wpt.alt = data.geometry[i][2];
+              });
               // Elevation diagram
               // Get rid of previous chart
               if (document.getElementById('elevation-div')) {
@@ -731,7 +724,7 @@
               }
               const el = L.control.elevation();
               el.addTo(map);
-              el.addData(coords);
+              el.addData(wpts);
             })
         })
 
@@ -885,33 +878,7 @@
           map.closePopup();
         }
 
-        L.DomEvent.on(dlBtn, 'click', () => {
-          let fileName = prompt('Please enter a name for the route');
-          if (fileName === '' || fileName === null) {
-            fileName = 'GPX Track';
-          }
-          let gpxTrack = '</name>\n<trkseg>\n';
-          for (let i = 0; i < wpts.length; i++) {
-            gpxTrack += `<trkpt lat="${wpts[i].lat}" lon="${wpts[i].lng}">\n</trkpt>\n`;
-          }
-          gpxTrack += '</trkseg>\n</trk>\n</gpx>';
-
-          const header = '<?xml version="1.0" encoding="UTF-8" standalone="no" ?>\n<gpx xmlns=' +
-            '"http://www.topografix.com/GPX/1/1"  creator="DonMaps" version="1.1" xmlns:xsi=' +
-            '"http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation=' +
-            '"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">\n<trk>\n<name>';
-
-          const gpx = header + fileName + gpxTrack;
-          const a = document.createElement('a');
-          const mimeType = 'text/csv;encoding:utf-8'; //mimeType || 'application/octet-stream';
-          document.body.appendChild(a);
-          a.href = URL.createObjectURL(new Blob([gpx], {
-            type: mimeType,
-          }));
-          a.download = fileName + '.gpx';
-          a.click();
-          document.body.removeChild(a);
-        });
+        L.DomEvent.on(dlBtn, 'click', () => saveGpx(wpts));
       };
       return button;
     },

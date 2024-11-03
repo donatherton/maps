@@ -29,6 +29,7 @@ html, body {
 .profileSelect {
 	background-color: rgba(0,125,125,0.5);
 	padding: 3px;
+	border-radius: 5px 5px 0 0;
 }
 .leaflet-control {
 	/*clear: none;*/
