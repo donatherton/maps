@@ -43,7 +43,7 @@
       Cycle: cycle,
       Transport: transport,
       Topographic: topo,
-      Google: google,
+      Google: google
       //    esri: esri,
     };
     const overLayers = {
@@ -144,29 +144,30 @@
   }
 
   function saveGpx(coords) {
-          let gpxTrack = '';
-          let el; // Is there elevation data?
-          coords.forEach(coord => {
-            coord.alt !== undefined ? el = `<ele>${coord.alt}</ele>` : el = '';
-            gpxTrack += `<trkpt lat="${coord.lat}" lon="${coord.lng}">${el}\n</trkpt>\n`;
-          });
+    if (coords === undefined || coords.length < 1) return; 
+    let gpxTrack = '';
+    let el; // Is there elevation data?
+    coords.forEach(coord => {
+      coord.alt !== undefined ? el = `<ele>${coord.alt}</ele>` : el = '';
+      gpxTrack += `<trkpt lat="${coord.lat}" lon="${coord.lng}">${el}</trkpt>\n`;
+    });
 
-          const gpx = '<?xml version="1.0" encoding="UTF-8" standalone="no" ?>\n'
-            + '<gpx xmlns="http://www.topografix.com/GPX/1/1"  creator="DonMaps" version='
-            + '"1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation='
-            + '"http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">\n'
-            + `<trk>\n<name>gpx-track</name>\n<trkseg>\n${gpxTrack}</trkseg>\n</trk>\n</gpx>`;
+    const gpx = `<?xml version="1.0" encoding="UTF-8" standalone="no" ?>\n
+      <gpx xmlns="http://www.topografix.com/GPX/1/1"  creator="DonMaps" version=
+      "1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation=
+      "http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">\n
+      <trk>\n<name>gpx-track</name>\n<trkseg>\n${gpxTrack}</trkseg>\n</trk>\n</gpx>`;
 
-          const a = document.createElement('a');
-          const mimeType = 'text/csv;encoding:utf-8'; //mimeType || 'application/octet-stream';
-          document.body.appendChild(a);
-          a.href = URL.createObjectURL(new Blob([gpx], {
-            type: mimeType,
-          }));
-          a.download = 'GPX-Track.gpx';
-          a.click();
-          document.body.removeChild(a);
-        };
+    const a = document.createElement('a');
+    const mimeType = 'text/csv;encoding:utf-8'; //mimeType || 'application/octet-stream';
+    document.body.appendChild(a);
+    a.href = URL.createObjectURL(new Blob([gpx], {
+      type: mimeType,
+    }));
+    a.download = 'gpx-track.gpx';
+    a.click();
+    document.body.removeChild(a);
+  };
 
   /*********************/
   //*search
@@ -185,7 +186,7 @@
         const searchDiv = L.DomUtil.create('div', 'info-window', button);
         searchDiv.id = 'search-div';
         searchDiv.style.width = '245px';
-        
+
         stopEventPropagation(searchDiv);
 
         const searchInput = L.DomUtil.create('input', 'info-window-input', searchDiv);
@@ -263,7 +264,7 @@
     onAdd(map) {
       const button = L.DomUtil.create('button', 'leaflet-bar leaflet-control leaflet-control-custom ors-routing');
       button.title = 'Get route with OpenRouteService';
-       button.id = 'ors-router';
+      button.id = 'ors-router';
 
       stopEventPropagation(button);
 
@@ -277,6 +278,7 @@
         let polyline3; // black edge
         const geolabel = [];
         let thisMarker;
+        let divInfo;
 
         // Disable these buttons to stop confusing things
         document.getElementById('plotter').setAttribute('disabled', 'disabled');
@@ -284,7 +286,7 @@
 
         L.Control.InfoWindow = L.Control.extend({
           onAdd(map) {
-            const divInfo = L.DomUtil.create('div', 'info-window');
+            divInfo = L.DomUtil.create('div', 'info-window');
             divInfo.id = 'divInfo';
             divInfo.style.overflow = 'visible';
             divInfo.style.width = '80vw';
@@ -407,9 +409,9 @@
           const icon = (wpts.length === 0) ? startIcon:endIcon;
 
           L.popup()
-            .setContent(`${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}<br />`
-              + '<button class="button" id="what">What\'s here?</button><br>'
-              + `<button class="button" id="${buttonID}">${buttonText}</button>`)
+            .setContent(`${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}<br />
+              <button class="button" id="what">What's here?</button><br>
+              <button class="button" id="${buttonID}">${buttonText}</button>`)
             .setLatLng(e.latlng)
             .openOn(map);
           document.getElementById('what').onclick = function() {
@@ -418,7 +420,7 @@
           document.getElementById(buttonID).onclick = function() {
             wpts.splice(wpts.length, 0, e.latlng);
             map.closePopup();
-            const newMarker = new L.Marker(e.latlng, {
+            new L.Marker(e.latlng, {
               icon: icon,
               draggable: 'true',
             }).addTo(map)
@@ -429,7 +431,7 @@
             //          geoRequest(e.latlng, 0, 'ins');
           }
         };
-        map.addEventListener('contextmenu', popup);
+        map.on('contextmenu', popup);
 
         function decodePolyline(geometry) {
           const latlngs = [];
@@ -579,7 +581,7 @@
         }
 
         L.DomEvent.on(dlButton, 'click', () => saveGpx(coords));
-         
+
         L.DomEvent.on(closeButton, 'click', () => {
           if (divInfo.style.left === '100%') {
             divInfo.style.left = '0%';
@@ -608,8 +610,8 @@
             checked = '';
             key = keys[k]
           }
-          profileSelect.innerHTML += `<input type="radio" id="${profiles[key]}" `
-            + `name="profile" value="${profiles[key]}"${checked}>  <label for="${profiles[key]}">${key}</label>`;
+          profileSelect.innerHTML += `<input type="radio" id="${profiles[key]}" 
+            name="profile" value="${profiles[key]}"${checked}>  <label for="${profiles[key]}">${key}</label>`;
         }
         L.DomEvent.on(profileSelect, 'click', () => {
           const radioValue = document.getElementsByName('profile');
@@ -623,9 +625,9 @@
         });
 
         const pref = L.DomUtil.create('div', '', profileSelect);
-        pref.innerHTML = '<label><input type="radio" id ="shortest" name="pref" value="shortest" checked>'
-          + 'Shortest</label><label><input type="radio" id ="fastest" name="pref" value="fastest">Fastest</label>'
-          + '<label><input type="checkbox" id="other_prefs" name="ferry" checked>Avoid ferries</label>';
+        pref.innerHTML = `<label><input type="radio" id ="shortest" name="pref" value="shortest" checked>
+          Shortest</label><label><input type="radio" id ="fastest" name="pref" value="fastest">Fastest</label>
+          <label><input type="checkbox" id="other_prefs" name="ferry" checked>Avoid ferries</label>`;
 
         L.DomEvent.on(pref, 'click', (() => {
           const radioValue = document.getElementsByName('pref');
@@ -659,6 +661,7 @@
 
       stopEventPropagation(button);
 
+      let divInfo;
       const smallIcon = L.divIcon({
         className: 'divicon',
         iconSize: [10, 10], // size of the icon
@@ -668,7 +671,7 @@
       button.onclick = () => {
         L.Control.InfoWindow = L.Control.extend({
           onAdd(map) {
-            const divInfo = L.DomUtil.create('div', 'info-window');
+            divInfo = L.DomUtil.create('div', 'info-window');
             divInfo.id = 'divInfo';
 
             stopEventPropagation(divInfo);
@@ -681,7 +684,7 @@
         };
         L.control.infoWindow({ position: 'topright' }).addTo(map);
 
-        //    remove these buttons so they don't confuse things
+        // Disable these buttons so they don't confuse things
         document.getElementById('ors-router').setAttribute('disabled', 'disabled');
         document.getElementById('plotter').setAttribute('disabled', 'disabled');
 
@@ -693,6 +696,8 @@
 
         const reset = L.DomUtil.create('button', 'button', divInfo);
         reset.innerHTML = 'Reset';
+
+        let el;
 
         L.DomEvent.on(elev, 'click', () => {
           let wpt = [];
@@ -722,7 +727,7 @@
               if (document.getElementById('elevation-div')) {
                 L.DomUtil.remove(document.getElementById('elevation-div'));
               }
-              const el = L.control.elevation();
+              el = L.control.elevation();
               el.addTo(map);
               el.addData(wpts);
             })
@@ -973,10 +978,10 @@
 
         map.fitBounds(polyline.getBounds());
 
-        const startMarker = new L.Marker(coords[0], {
+        new L.Marker(coords[0], {
           icon: startIcon,
         }).addTo(map).bindPopup(popupText);
-        const endMarker = new L.Marker(coords[coords.length - 1], {
+        new L.Marker(coords[coords.length - 1], {
           icon: endIcon,
         }).addTo(map).bindPopup(popupText);
 
