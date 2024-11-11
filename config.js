@@ -14,5 +14,6 @@ const config = {
 // ORS
 	preference: 'shortest',
 	defaultLocation: [50.157876, -5.072937],
-	defaultZoom: 14
+	defaultZoom: 14,
+	layer: 'osm'
 }

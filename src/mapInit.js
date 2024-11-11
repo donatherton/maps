@@ -30,13 +30,6 @@
         attribution: '<a href="https://mapbox.com/about/maps" class="mapbox-wordmark" target="_blank">Mapbox</a> &copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> <strong><a href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a></strong>',
         maxZoom: 21 });
 
-    const cz = centreAndZoom()
-    map = new L.Map('map', {
-      center: cz[0],
-      zoom: cz[1],
-      layers: [osm],
-    });
-
     const baseMaps = {
       Openstreetmap: osm,
       Outdoors: outdoors,
@@ -49,6 +42,13 @@
     const overLayers = {
       Openseamap: sea,
     };
+
+    const cz = centreAndZoom()
+    map = new L.Map('map', {
+      center: cz[0],
+      zoom: cz[1],
+      layers: cz[2]//[osm],
+    });
 
     // add layer control
     L.control.layers(baseMaps, overLayers).addTo(map);
@@ -65,25 +65,22 @@
 
     /* If url contains centre and zoom, default values if not */
     function centreAndZoom() {
-      const args = location.search.substr(1).split(/&/);
-      let centre, zoom;
-      if (args.length > 1) {
-        let tmp = args[0].split(/=/);
-        if (tmp[0] !== '') {
-          const comp = decodeURIComponent(tmp.slice(1).join('').replace('+', ' '));
-          centre = comp.replace('LatLng(', '');
-          centre = centre.replace(')', '');
-          centre = centre.split(/,/);
-        }
-        tmp = args[1].split(/=/);
-        if (tmp[0] !== '') {
-          zoom = decodeURIComponent(tmp.slice(1).join('').replace('+', ' '));
-        }
+      const args = {};
+      window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, (m, key, value) => {
+        args[key] = value;
+      });
+
+      let centre, zoom, lat, lng, layer;
+      if (Object.keys(args).length > 0) {
+        ({ lat, lng, zoom, layer} = args);
+        centre = [lat, lng];
       } else {
         centre = config.defaultLocation;
         zoom = config.defaultZoom;
+        layer = config.layer;
       }
-      return [centre, zoom];
+      layer = baseMaps[Object.keys(baseMaps).find(key => baseMaps[key].options.id === layer)];
+      return [centre, zoom, layer];
     }
 
     function geoData(e) {
@@ -93,7 +90,7 @@
         .setContent(`${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}<br /><button class="button" id="geo">What's here?</button>`)
         .openOn(map);
       document.getElementById('geo').onclick = () => {
-        e.preventDefault;
+        //e.preventDefault;
         geoDataRequest(e);
         map.closePopup(infoPopup);
       };
@@ -111,7 +108,9 @@
         L.DomEvent.on(reloadButton, 'click', () => {
           const centre = map.getCenter();
           const zoom = map.getZoom();
-          const url = `index.html?coords=${centre}&zoom=${zoom}`;
+          const mapLayerID = Object.keys(map._layers)[0];
+          const url = `index.html?lat=${centre.lat}&lng=${centre.lng}&zoom=${zoom}&layer=${map._layers[mapLayerID].options.id}`;
+
           window.location.href = url;
         });
         return reloadButton;
