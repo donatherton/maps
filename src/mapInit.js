@@ -54,20 +54,16 @@
     L.control.layers(baseMaps, overLayers).addTo(map);
 
     // Set cursors
-    function onTouchStart() {
-      mapDiv.style.cursor = 'grab'
-    }
-
-    function onTouchEnd() {
-      mapDiv.style.cursor = 'default'
+    function onMouse(e) {
+      e.type === 'mousedown' ? mapDiv.style.cursor = 'grab' :  mapDiv.style.cursor = 'default';
     }
     
     const mapDiv = document.getElementById('map');
 
     mapDiv.style.cursor = 'default';
 
-    mapDiv.addEventListener('mousedown', onTouchStart);
-    mapDiv.addEventListener('mouseup', onTouchEnd);
+    mapDiv.addEventListener('mousedown', onMouse);
+    mapDiv.addEventListener('mouseup', onMouse);
 
     /* If url contains centre and zoom, default values if not */
     function centreAndZoom() {
