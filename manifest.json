@@ -1,0 +1,14 @@
+{
+  "name": "DonMaps",
+  "short_name": "DonMaps",
+  "start_url": "index.html",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon.png",
+      "type": "image/png", "sizes": "100x83"
+    }
+  ]
+}
+

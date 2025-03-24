@@ -54,14 +54,20 @@
     L.control.layers(baseMaps, overLayers).addTo(map);
 
     // Set cursors
-    document.getElementById('map').style.cursor = 'default';
+    function onTouchStart() {
+      mapDiv.style.cursor = 'grab'
+    }
 
-    onmousedown = () => {
-      document.getElementById('map').style.cursor = 'grab';
+    function onTouchEnd() {
+      mapDiv.style.cursor = 'default'
     }
-    onmouseup = () => {
-      document.getElementById('map').style.cursor = 'default';
-    }
+    
+    const mapDiv = document.getElementById('map');
+
+    mapDiv.style.cursor = 'default';
+
+    mapDiv.addEventListener('mousedown', onTouchStart);
+    mapDiv.addEventListener('mouseup', onTouchEnd);
 
     /* If url contains centre and zoom, default values if not */
     function centreAndZoom() {
@@ -83,19 +89,18 @@
       return [centre, zoom, layer];
     }
 
-    function geoData(e) {
+    function getGeoData(e) {
       const infoPopup = L.popup();
       infoPopup
         .setLatLng(e.latlng)
         .setContent(`${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}<br /><button class="button" id="geo">What's here?</button>`)
         .openOn(map);
       document.getElementById('geo').onclick = () => {
-        //e.preventDefault;
         geoDataRequest(e);
         map.closePopup(infoPopup);
       };
     }
-    map.on('contextmenu', geoData);
+    map.on('contextmenu', getGeoData);
 
     // Reload button
     L.Control.Reload = L.Control.extend({
@@ -109,9 +114,8 @@
           const centre = map.getCenter();
           const zoom = map.getZoom();
           const mapLayerID = Object.keys(map._layers)[0];
-          const url = `index.html?lat=${centre.lat}&lng=${centre.lng}&zoom=${zoom}&layer=${map._layers[mapLayerID].options.id}`;
 
-          window.location.href = url;
+          window.location.href = `index.html?lat=${centre.lat}&lng=${centre.lng}&zoom=${zoom}&layer=${map._layers[mapLayerID].options.id}`;
         });
         return reloadButton;
       },
@@ -243,7 +247,6 @@
             geoSearch(searchInput.value);
           }
         });
-
       });
       return button;
     },
