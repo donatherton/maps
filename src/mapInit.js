@@ -1,4 +1,3 @@
-/* global L, config, Chart */
 'use strict';
 
 const config = getHash();
