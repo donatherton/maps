@@ -1,24 +1,24 @@
 /* global L, config, Chart */
 'use strict';
 
-(() => {
+const config = getHash();
+
+function Map() {
   let map;
   (() => {
-    /* Set up map */
-    // create the tile layers with correct attribution
     const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
       { id: 'osm',
         attribution: 'Map data &copy;  <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' });
-    const outdoors = L.tileLayer(`https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=${config.tfAPI}`,
+    const outdoors = L.tileLayer(`https://tile.thunderforest.com/outdoors/{z}/{x}/{y}.png?apikey=${config.tfHash}`,
       { id: 'outdoors',
         attribution: 'Map data &copy; <a href=https://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' });
-    const cycle = L.tileLayer(`https://tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey=${config.tfAPI}`,
+    const cycle = L.tileLayer(`https://tile.thunderforest.com/cycle/{z}/{x}/{y}.png?apikey=${config.tfHash}`,
       { id: 'cycle',
         attribution: 'Map data &copy; <a href=https://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' });
     const sea =  L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png',
       { id: 'sea',
         attribution: 'Map data: &copy; <a href="https://www.openseamap.org">OpenSeaMap</a> contributors' });
-    const transport =  L.tileLayer(`https://tile.thunderforest.com/transport/{z}/{x}/{y}.png?apikey=${config.tfAPI}`,
+    const transport =  L.tileLayer(`https://tile.thunderforest.com/transport/{z}/{x}/{y}.png?apikey=${config.tfHash}`,
       { id: 'transport',
         attribution: 'Map data &copy; <a href=https://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' });
     const topo =  L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
@@ -37,8 +37,8 @@
       Transport: transport,
       Topographic: topo,
       Google: google
-      //    esri: esri,
     };
+
     const overLayers = {
       Openseamap: sea,
     };
@@ -54,16 +54,14 @@
     L.control.layers(baseMaps, overLayers).addTo(map);
 
     // Set cursors
-    function onMouse(e) {
-      e.type === 'mousedown' ? mapDiv.style.cursor = 'grab' :  mapDiv.style.cursor = 'default';
+    document.getElementById('map').style.cursor = 'default';
+
+    onmousedown = () => {
+      document.getElementById('map').style.cursor = 'grab';
     }
-    
-    const mapDiv = document.getElementById('map');
-
-    mapDiv.style.cursor = 'default';
-
-    mapDiv.addEventListener('mousedown', onMouse);
-    mapDiv.addEventListener('mouseup', onMouse);
+    onmouseup = () => {
+      document.getElementById('map').style.cursor = 'default';
+    }
 
     /* If url contains centre and zoom, default values if not */
     function centreAndZoom() {
@@ -557,19 +555,19 @@
               plot.push([wpts[i].lng, wpts[i].lat]);
             }
 
-            const url = `https://api.openrouteservice.org/v2/directions/${config.profile}/geojson`;
+            const url = `https://api.openrouteservice.org/v2/directions/${config.orsDefaults.profile}/geojson`;
             fetch(url, {
               method: 'POST',
               headers: {
                 'Accept': 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8',
                 'Content-Type': 'application/json',
-                'Authorization': config.orsAPI
+                'Authorization': config.orsHash
               },
               body: JSON.stringify({
                 'coordinates': plot,
                 'elevation': true,
                 'instructions': true,
-                'preference': config.preference,
+                'preference': config.orsDefaults.preference,
                 'options': {'avoid_features': ferry}
               })
             })
@@ -601,7 +599,7 @@
         const keys = Object.keys(profiles);
         let key;
         for (const k in values) {
-          if (values[k] === config.profile) {
+          if (values[k] === config.orsDefaults.profile) {
             checked = 'checked';
             key = keys[k]
           } else {
@@ -615,7 +613,7 @@
           const radioValue = document.getElementsByName('profile');
           for (let i=0; i<radioValue.length; i=i+1) {
             if (radioValue[i].checked) {
-              config.profile = radioValue[i].value;
+              config.orsDefaults.profile = radioValue[i].value;
               routeRequest();
               return;
             }
@@ -631,7 +629,7 @@
           const radioValue = document.getElementsByName('pref');
           for (let i=0; i<radioValue.length; i=i+1) {
             if (radioValue[i].checked) {
-              config.preference = radioValue[i].value;
+              config.orsDefaults.preference = radioValue[i].value;
               routeRequest();
               return;
             }
@@ -707,7 +705,7 @@
             headers: {
               'Accept': 'application/json',
               'Content-Type': 'application/json',
-              'Authorization': config.orsAPI
+              'Authorization': config.orsHash
             },
             body: JSON.stringify({
               'format_in': 'polyline',
@@ -1330,4 +1328,6 @@
   L.control.elevation = (options) => {
     return new L.Control.Elevation(options);
   };
-})()
+}
+
+const newMap = new Map();

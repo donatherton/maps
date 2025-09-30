@@ -1,48 +1,48 @@
-const staticMaps = "weather-v1"
+const MAPS_STATIC = "maps-v1"
 const assets = [
-  "/",
-  "/index.html",
-  "/config.js",
-  "leaflet.css",
-  "/css/donmaps-style.css",
-  "/src/Chart.min.js",
-  "/src/leaflet.js",
-  "/mapInit.js",
-  "/images/24.png",
-  "/images/crosshairs.svg",
-  "/images/edit-icon.png",
-  "/images/fullscreen.png",
-  "/images/layers.png",
-  "/images/layers-2x.png",
-  "/images/loader.gif",
-  "/images/location.png",
-  "/images/location.svg",
-  "/images/marker-end-icon-2x.png",
-  "/images/marker-icon.png",
-  "/images/marker-icon-1.png",
-  "/images/marker-icon-2.png",
-  "/images/marker-shadow.png",
-  "/images/marker-start-icon-2x.png",
-  "/images/marker-via-icon-2x.png",
-  "/images/pin-icon-end.png",
-  "/images/pin-icon-start.png",
-  "/images/pin-shadow.png",
-  "/images/routing-icon.png",
-  "/images/routing_icon.png",
-  "/images/search-icon.png",
-  "/images/search-icon-mobile.png",
-  "/images/track.odg",
-  "/images/upload-icon.odg",
-  "/images/view-refresh.png",
+  "/donmaps-pwa/",
+  "/donmaps-pwa/index.html",
+  "/donmaps-pwa/config.js",
+  "/donmaps-pwa/leaflet.css",
+  "/donmaps-pwa/css/donmaps-style.css",
+  "/donmaps-pwa/src/Chart.min.js",
+  "/donmaps-pwa/src/leaflet.js",
+  "/donmaps-pwa/src/mapInit.js",
+  "/donmaps-pwa/images/24.png",
+  "/donmaps-pwa/images/crosshairs.svg",
+  "/donmaps-pwa/images/edit-icon.png",
+  "/donmaps-pwa/images/fullscreen.png",
+  "/donmaps-pwa/images/layers.png",
+  "/donmaps-pwa/images/layers-2x.png",
+  "/donmaps-pwa/images/loader.gif",
+  "/donmaps-pwa/images/location.png",
+  "/donmaps-pwa/images/location.svg",
+  "/donmaps-pwa/images/marker-end-icon-2x.png",
+  "/donmaps-pwa/images/marker-icon.png",
+  "/donmaps-pwa/images/marker-icon-1.png",
+  "/donmaps-pwa/images/marker-icon-2.png",
+  "/donmaps-pwa/images/marker-shadow.png",
+  "/donmaps-pwa/images/marker-start-icon-2x.png",
+  "/donmaps-pwa/images/marker-via-icon-2x.png",
+  "/donmaps-pwa/images/pin-icon-end.png",
+  "/donmaps-pwa/images/pin-icon-start.png",
+  "/donmaps-pwa/images/pin-shadow.png",
+  "/donmaps-pwa/images/routing-icon.png",
+  "/donmaps-pwa/images/routing_icon.png",
+  "/donmaps-pwa/images/search-icon.png",
+  "/donmaps-pwa/images/search-icon-mobile.png",
+  "/donmaps-pwa/images/track.odg",
+  "/donmaps-pwa/images/upload-icon.odg",
+  "/donmaps-pwa/images/view-refresh.png",
 ]
 
-self.addEventListener("install", installEvent => {
-  installEvent.waitUntil(
-    caches.open(staticMaps).then(cache => {
-      cache.addAll(assets)
-    })
-  )
-})
+self.addEventListener('install', (event) => {
+  console.log('ServiceWorker installing');
+  event.waitUntil(
+    caches.open(MAPS_STATIC)
+    .then(cache => cache.addAll(assets))
+  );
+});
 
 self.addEventListener("fetch", fetchEvent => {
   fetchEvent.respondWith(
