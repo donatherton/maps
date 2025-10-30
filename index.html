@@ -7,21 +7,20 @@
 
 <link rel="stylesheet" href="leaflet.css" />
 <link rel="stylesheet" href="css/donmaps-style.css" />
+
 <link rel="manifest" href="manifest.json" />
 
-<script src="src/leaflet.js"></script>
 </head>
 
 <body>
     <div id="map"></div>
-	<script src="config.js"></script>
 	<script src="src/Chart.min.js"></script>
-	<script src="src/mapInit.js"></script>
+	<script type="module" src="src/main.js"></script>
 	<script>
 		if ("serviceWorker" in navigator) {
           window.addEventListener("load", function() {
             navigator.serviceWorker
-              .register("/donmaps-pwa/serviceWorker.js")
+              .register("./serviceWorker.js")
               .then(res => console.log("service worker registered"))
               .catch(err => console.log("service worker not registered", err))
           })
