@@ -46,21 +46,21 @@ export default function createMap() {
 
   /* If local storage contains centre and zoom, default values if not */
   const args = JSON.parse(sessionStorage.getItem('vars'));
-  let centre, zoom, lat, lng, layer;
+  let centre, zoom, lat, lng, layerId;
   if (args) {
-    ({ lat, lng, zoom, layer} = args);
+    ({ lat, lng, zoom, layerId} = args); console.log(args);
     centre = [lat, lng];
   } else {
     centre = defaultLocation;
     zoom = defaultZoom;
-    layer =  defaultLayer;
+    layerId =  defaultLayer;
   }
-  const layerId = baseMaps[Object.keys(baseMaps).find(key => baseMaps[key].options.id === layer)];
+  let layer = baseMaps[Object.keys(baseMaps).find(key => baseMaps[key].options.id === layerId)];
 
   const map = new L.Map('map', {
     center: centre,
     zoom: zoom,
-    layers: layerId
+    layers: layer
   });
 
   // add layer control
@@ -98,7 +98,7 @@ export default function createMap() {
         const centre = map.getCenter();
         const zoom = map.getZoom();
 
-        sessionStorage.setItem('vars', `{"lat": ${centre.lat}, "lng": ${centre.lng}, "zoom": ${zoom}, "layer": "${layer.options.id}"}`);
+        sessionStorage.setItem('vars', `{"lat": ${centre.lat}, "lng": ${centre.lng}, "zoom": ${zoom}, "layerId": "${layer.options.id}"}`);
 
         window.location.reload();
       });
