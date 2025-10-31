@@ -44,32 +44,32 @@ export default function createMap() {
     Openseamap: sea,
   };
 
-  /* If url contains centre and zoom, default values if not */
-  const args = {};
-  window.location.href.replace(/[?&]+([^=&]+)=([^&]*)/gi, (m, key, value) => {
-    args[key] = value;
-  });
-
+  /* If local storage contains centre and zoom, default values if not */
+  const args = JSON.parse(sessionStorage.getItem('vars'));
   let centre, zoom, lat, lng, layer;
-  if (Object.keys(args).length > 0) {
+  if (args) {
     ({ lat, lng, zoom, layer} = args);
     centre = [lat, lng];
   } else {
     centre = defaultLocation;
     zoom = defaultZoom;
-    layer = defaultLayer;
+    layer =  defaultLayer;
   }
-  layer = baseMaps[Object.keys(baseMaps).find(key => baseMaps[key].options.id === layer)];
-  const cz = [centre, zoom, layer];
+  const layerId = baseMaps[Object.keys(baseMaps).find(key => baseMaps[key].options.id === layer)];
 
   const map = new L.Map('map', {
-    center: cz[0],
-    zoom: cz[1],
-    layers: cz[2]//[osm],
+    center: centre,
+    zoom: zoom,
+    layers: layerId
   });
 
   // add layer control
   L.control.layers(baseMaps, overLayers).addTo(map);
+
+  // Listen for base layer change
+  map.on('baselayerchange', function (e) {
+    layer = e.layer;
+  });
 
   // Set cursors
   onmousedown = () => {
@@ -80,12 +80,12 @@ export default function createMap() {
   }
   // Add plugin buttons
   placeSearch().addTo(map);
+  findLocation().addTo(map);
   plotTrack().addTo(map);
   plotRoute().addTo(map);
   loadGPX().addTo(map);
-  findLocation().addTo(map);
   fullScreen().addTo(map);
-
+  
   // Reload button
   L.Control.Reload = L.Control.extend({
     onAdd(map) {
@@ -97,15 +97,12 @@ export default function createMap() {
       L.DomEvent.on(reloadButton, 'click', () => {
         const centre = map.getCenter();
         const zoom = map.getZoom();
-        const mapLayerID = Object.keys(map._layers)[0];
 
-        window.location.href = `index.html?lat=${centre.lat}&lng=${centre.lng}&zoom=${zoom}&layer=${map._layers[mapLayerID].options.id}`;
+        sessionStorage.setItem('vars', `{"lat": ${centre.lat}, "lng": ${centre.lng}, "zoom": ${zoom}, "layer": "${layer.options.id}"}`);
+
+        window.location.reload();
       });
       return reloadButton;
-    },
-
-    onRemove(map) {
-      // Nothing to do here
     },
   });
 
