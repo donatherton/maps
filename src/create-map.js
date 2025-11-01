@@ -7,7 +7,7 @@ import loadGPX from './load-gpx.js';
 import findLocation from './location.js';
 import fullScreen from './fullscreen.js';
 
-export default function createMap() {
+export default () => {
   const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     { id: 'osm',
       attribution: 'Map data &copy;  <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' });

@@ -1,7 +1,5 @@
 import * as L from './leaflet-src.esm.js';
-import elevation from './elevation.js';
-import saveGpx from './save-gpx.js';
-import { orsAPI } from './config.js';
+//import { orsAPI } from './config.js';
 
 L.Control.PlotTrack = L.Control.extend({
     options: {
@@ -56,12 +54,14 @@ L.Control.PlotTrack = L.Control.extend({
 
         let el;
 
-        L.DomEvent.on(elev, 'click', () => {
+        L.DomEvent.on(elev, 'click', async () => {
+          const { default: elevation } = (await import('./elevation.js'));
+          const { orsAPI } = await import('./config.js');
           let wpt = [];
           for (let i = 0; i < wpts.length; i++) {
             wpt.push(Object.values(wpts[i]).reverse());
           }
-          fetch(`https://api.openrouteservice.org/elevation/line`, {
+          await fetch(`https://api.openrouteservice.org/elevation/line`, {
             method: 'POST',
             headers: {
               'Accept': 'application/json',
@@ -87,7 +87,7 @@ L.Control.PlotTrack = L.Control.extend({
               el = elevation();
               el.addTo(map);
               el.addData(wpts, map);
-            })
+          })
         })
 
         L.DomEvent.on(reset, 'click', () => {
@@ -240,13 +240,15 @@ L.Control.PlotTrack = L.Control.extend({
           map.closePopup();
         }
 
-        L.DomEvent.on(dlBtn, 'click', () => saveGpx(wpts));
+        L.DomEvent.on(dlBtn, 'click', () => {
+          import('./save-gpx.js')
+            .then(saveGpx => saveGpx.default(wpts));;
+        });
       };
       return button;
-    },
+    }
   });
-  const plotTrack = (options) => {
-    return new L.Control.PlotTrack(options);
-  };
 
-export default plotTrack;
+export default (options) => {
+  return new L.Control.PlotTrack(options);
+};

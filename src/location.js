@@ -45,9 +45,7 @@ L.Control.FindLocation = L.Control.extend({
       return button;
     },
   });
-const findLocation = (options) => {
+
+export default (options) => {
   return new L.Control.FindLocation(options);
 };
-
-export default findLocation;
-

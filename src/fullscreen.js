@@ -41,8 +41,7 @@ L.Control.FullScreen = L.Control.extend({
       return button;
     }
   });
-const fullScreen = function (options) {
+
+export default (options) => {
   return new L.Control.FullScreen(options);
 };
-
-export default fullScreen;

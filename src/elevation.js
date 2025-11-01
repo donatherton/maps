@@ -210,7 +210,7 @@ L.Control.Elevation = L.Control.extend({
     },
 
   });
-const elevation = (options) => {
+
+export default (options) => {
   return new L.Control.Elevation(options);
 };
-export default elevation;

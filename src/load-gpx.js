@@ -1,5 +1,4 @@
 import * as L from './leaflet-src.esm.js';
-import elevation from './elevation.js';
 
 L.Control.LoadGPX = L.Control.extend({
       options: {
@@ -31,9 +30,8 @@ L.Control.LoadGPX = L.Control.extend({
       fileInput.style.display = 'none';
 
       function loadGPX(gpxFile) {
-        let alt;
+        let alt = null;
         const coords = [];
-        let noAlts = false;
         let lngth = 0;
         let tags;
 
@@ -66,13 +64,14 @@ L.Control.LoadGPX = L.Control.extend({
         }
 
         const name = gpxFile.getElementsByTagName('name')[0].innerHTML;
+        const hasAlts = gpxFile.getElementsByTagName('ele').length;
         const trkpts = gpxFile.getElementsByTagName(tags);
         for (let i = 0; i < trkpts.length; i++) {
           const lat = Number(trkpts[i].getAttribute('lat'));
           const lng = Number(trkpts[i].getAttribute('lon'));
-          try {
+          if (hasAlts) {
             alt = Number(trkpts[i].getElementsByTagName('ele')[0].innerHTML);
-          } catch (err) { noAlts = true; }
+          }
           const latlng = { lat, lng, alt };
           coords.push(latlng);
           if (i > 0) {
@@ -96,10 +95,13 @@ L.Control.LoadGPX = L.Control.extend({
         }).addTo(map).bindPopup(popupText);
 
         // Elevation diagram
-        if (noAlts === false) {
-          const el = elevation();
-          el.addTo(map);
-          el.addData(coords, map);
+        if (hasAlts) {
+          import('./elevation.js')
+            .then( elevation => {
+            const el = elevation.default();
+            el.addTo(map);
+            el.addData(coords, map);
+           });
         }
       }
 
@@ -117,10 +119,9 @@ L.Control.LoadGPX = L.Control.extend({
         };
       };
       return button;
-    },
+    }
   });
-const loadGPX = (options) => {
+
+export default (options) => {
   return new L.Control.LoadGPX(options);
 };
-
-export default loadGPX;

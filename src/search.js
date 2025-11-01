@@ -82,10 +82,6 @@ L.Control.PlaceSearch = L.Control.extend({
     },
   });
 
-  const placeSearch = (options) => {
-    return new L.Control.PlaceSearch(options);
-  };
-
-export default placeSearch
-
-
+export default (options) => {
+  return new L.Control.PlaceSearch(options);
+};

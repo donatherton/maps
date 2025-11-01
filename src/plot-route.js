@@ -1,7 +1,6 @@
 import * as L from './leaflet-src.esm.js';
 import { orsAPI, defaultProfile, defaultPreference } from './config.js';
 import elevation from './elevation.js';
-import saveGpx from './save-gpx.js';
 
 let profile = defaultProfile;
 let preference = defaultPreference;
@@ -344,7 +343,10 @@ L.Control.PlotRoute = L.Control.extend({
           }
         }
 
-        L.DomEvent.on(dlButton, 'click', () => saveGpx(coords));
+        L.DomEvent.on(dlButton, 'click', () => {
+          import('./save-gpx.js')
+            .then(saveGpx => saveGpx.default(coords));
+        });
 
         L.DomEvent.on(closeButton, 'click', () => {
           if (divInfo.style.left === '100%') {
@@ -407,9 +409,7 @@ L.Control.PlotRoute = L.Control.extend({
       return button;
     }
   });
-  const plotRoute = function (options) {
-    return new L.Control.PlotRoute(options);
-  };
-  export default plotRoute;
 
-
+export default (options) => {
+  return new L.Control.PlotRoute(options);
+};
