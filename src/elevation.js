@@ -72,7 +72,7 @@ L.Control.Elevation = L.Control.extend({
           ctx2.clearRect(0, 0, newCanvas.width, newCanvas.height);
           ctx2.beginPath();
           ctx2.moveTo(item.clientX - canvas.getBoundingClientRect().left, 45);
-          ctx2.lineTo(item.clientX - canvas.getBoundingClientRect().left, 100);
+          ctx2.lineTo(item.clientX - canvas.getBoundingClientRect().left, 99);
           ctx2.lineWidth = 1;
           ctx2.strokeStyle = '#637E0B';
           ctx2.stroke();
@@ -129,16 +129,16 @@ L.Control.Elevation = L.Control.extend({
       ctx.fillText(pt[pt.length - 1][0] + 'km', canvas.width - 50, canvas.height - 2);
       //y axis
       ctx.beginPath();
-      ctx.moveTo(1, 0);
+      ctx.moveTo(0, 0);
       ctx.lineTo(0, canvas.height);
       ctx.stroke();
       ctx.fillText(minHeight + 'm', 2, canvas.height - 2);
       ctx.fillText(maxHeight + 'm', 2, 10);
 
       ctx.beginPath();
-      ctx.moveTo(0, canvas.height - 12);
+      ctx.moveTo(1, canvas.height - 12);
       pt.forEach(point => {
-        ctx.lineTo(Number(point[0]) * widthFactor, canvas.height - ((point[1] - minHeight) * heightFactor) - 12);
+        ctx.lineTo((Number(point[0]) * widthFactor) + 1, canvas.height - ((point[1] - minHeight) * heightFactor) - 12);
       });
       ctx.lineTo(canvas.width, canvas.height - 12);
       ctx.closePath();
