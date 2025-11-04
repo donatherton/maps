@@ -176,16 +176,6 @@ html, body {
 	padding: 5px;
 	resize: vertical;
 }
-.elev-window {
-	position: relative;
-	background: rgba(156, 194, 34, 0.2);
-	width: 95vw;
-	max-width: 700px;
-	max-height: 100px;
-	box-shadow: 4px 4px 4px 4px rgba(0, 0, 0, 0.1), 0 4px 4px 4px rgba(0, 0, 0, 0.1);
-	border: 1px #fff;
-	border-radius: 5px;
-}
 p {
 	width: 100%;
 	/*padding: 3px;*/
@@ -256,5 +246,29 @@ div.input-elems p {
 	background-size: 95%;
 	border-radius:4px;
 	cursor: pointer;
+}
+.elev-window {
+	position: relative;
+	background: rgba(156, 194, 34, 0.2);
+	width: 95vw;
+	max-width: 720px;
+	max-height: 120px;
+	box-shadow: 4px 4px 4px 4px rgba(0, 0, 0, 0.1), 0 4px 4px 4px rgba(0, 0, 0, 0.1);
+	border: 1px #fff;
+	border-radius: 5px;
+	padding: 10px;
+}
+#elevation {
+	position: relative;
+	top: 0;
+	left: 0;
+	height: 75px;
+	z-index: -1;
+}
+#mouseover {
+	position: absolute;
+	top: 0;
+	left: 9px; /*  9px so that mouse pointer can get to very start */
+	z-index: 1;
 }
 

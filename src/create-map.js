@@ -48,7 +48,7 @@ export default () => {
   const args = JSON.parse(sessionStorage.getItem('vars'));
   let centre, zoom, lat, lng, layerId;
   if (args) {
-    ({ lat, lng, zoom, layerId} = args); console.log(args);
+    ({ lat, lng, zoom, layerId} = args);
     centre = [lat, lng];
   } else {
     centre = defaultLocation;

@@ -305,8 +305,7 @@ L.Control.PlotRoute = L.Control.extend({
 
           map.fitBounds(polyline.getBounds());
 
-          //      Add elevation diagram
-          el.clear();
+          // Add elevation diagram
           el.addData(coords, map);
         }
 

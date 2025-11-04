@@ -5,21 +5,20 @@ L.Control.Elevation = L.Control.extend({
       position: 'bottomright',
     },
 
-    onRemove(map) {
+    // onRemove(map) {
 
-    },
+    // },
 
     onAdd(map) {
       const container = L.DomUtil.create('div', 'elev-window');
       container.id = 'elevation-div';
-      container.style.position = 'relative';
-      container.style.width = '95vw';
 
       const closeButton = L.DomUtil.create('button', 'button', container);
       closeButton.innerHTML = 'Hide >';
       closeButton.style.position = 'relative';
       closeButton.style.float = 'right';
       closeButton.style.background = 'rgba(156, 194, 34, 0.8)';
+      closeButton.style.zIndex = '2';
 
       L.DomEvent.on(closeButton, 'click', () => {
         if (container.style.left === '100%') {
@@ -30,30 +29,17 @@ L.Control.Elevation = L.Control.extend({
         } else {
           container.style.left = '100%';
           closeButton.innerHTML = '< Open';
-          closeButton.style.left = '-50px';
+          closeButton.style.left = '-60px';
           closeButton.style.float = 'left';
         }
       });
-
-      const canvas = L.DomUtil.create('canvas', '', container);
-      canvas.id = 'elevation';
 
       L.DomEvent.on(container, 'click contextmenu mousedown mousewheel dblclick touchmove', L.DomEvent.stopPropagation);
 
       return container;
     },
 
-    // Clear any previous charts
-    clear() {
-      const index = Object.keys(Chart.instances);
-      if (index.length > 0) {
-        index.forEach(() => {
-          Chart.instances[index].destroy();
-        });
-      }
-    },
-
-    addData(coords, map) { // map needs to be explicitly sent as it loses scope here
+  addData(coords, map) { // map needs to be explicitly sent as it loses scope here
       const pt = [];
       const spotMarker = L.popup({ closeButton: false });
 
@@ -69,20 +55,36 @@ L.Control.Elevation = L.Control.extend({
       }
 
       function onmouseover(item) {
+        // Calc which index on coords array
+        const dist = (item.clientX - canvas.getBoundingClientRect().left) / canvas.getBoundingClientRect().width * Number(pt[pt.length - 1][0]);
+        let index = 0;
+        while (index < pt.length - 1 && pt[index][0] <= dist) {
+          index++;
+        } 
         // Add marker on polyline
+        const d = pt[index][0] + 'km';
+        const h = Math.round(pt[index][1]) + 'm';
         spotMarker
-          .setLatLng([coords[item.index].lat, coords[item.index].lng])
-          .setContent(`${(item.xLabel / 1.609).toFixed(3)} miles<br>${item.yLabel}m`)
-          .openOn(map);
+          .setLatLng([coords[index].lat, coords[index].lng])
+          .setContent(`${d}<br>${h}`)
+          .openOn(map);          
+          // Tooltip on chart
+          ctx2.clearRect(0, 0, newCanvas.width, newCanvas.height);
+          ctx2.beginPath();
+          ctx2.moveTo(item.clientX - canvas.getBoundingClientRect().left, 40);
+          ctx2.lineTo(item.clientX - canvas.getBoundingClientRect().left, 100);
+          ctx2.lineWidth = 1;
+          ctx2.strokeStyle = '#637E0B';
+          ctx2.stroke();
+          ctx2.fillText(h, item.clientX - canvas.getBoundingClientRect().left + 2, 50);
+          ctx2.fillText(d, item.clientX - canvas.getBoundingClientRect().left + 2, 60);
       }
 
       function onmouseout() {
-        // Remove marker on mouseout
-        if (typeof (spotMarker) !== 'undefined') {
           if (map.hasLayer(spotMarker)) {
             map.closePopup(spotMarker);
+            ctx2.clearRect(0, 0, newCanvas.width, newCanvas.height);
           }
-        }
       }
 
       function getAxis(axis) {
@@ -96,10 +98,6 @@ L.Control.Elevation = L.Control.extend({
         return dist;
       }
 
-      // Get rid of markers when mouse leaves chart
-      document.getElementById('elevation').addEventListener('mouseout', onmouseout);
-      document.getElementById('elevation').addEventListener('touchend', onmouseout);
-
       // Make the array with x and y axis data
       pt[0] = [0, coords[0].alt];
       let d = 0;
@@ -108,107 +106,61 @@ L.Control.Elevation = L.Control.extend({
         pt.push([(d / 1000).toFixed(3), Math.round(coords[i].alt)]);
       }
 
-      const pts = {
-        labels: getAxis('x'),
-        datasets: [{
-          backgroundColor: 'rgba(156, 194, 34, 0.8)',
-          borderColor: 'rgba(156, 194, 34, 0.8)',
-          pointStyle: 'circle',
-          pointRadius: 0,
-          data: getAxis('y'),
-        }],
-      };
+      const canvas = document.createElement('canvas');
+      canvas.id = 'elevation'; 
+      canvas.width = 700;
+      canvas.height = 75;
+      canvas.style.maxWidth = '90vw';
+      document.getElementById('elevation-div').appendChild(canvas);
 
-      // Create a custom tooltip positioner to put at the bottom of the chart area
-      Chart.Tooltip.positioners.custom = (items) => {
-        const pos = Chart.Tooltip.positioners.average(items);
-        // Happens when nothing is found
-        if (pos === false) {
-          return false;
-        }
-        return {
-          x: pos.x,
-          y: chart.chartArea.bottom + 10,
-        };
-      };
+      const ctx = canvas.getContext('2d');
 
-      // Draws the line on mouseover
-      Chart.plugins.register({
-        afterDatasetsDraw(chart) {
-          if (chart.tooltip._active && chart.tooltip._active.length) {
-            const activePoint = chart.tooltip._active[0];
-            const { ctx } = chart;
-            const yAxis = chart.scales['y-axis-0'];
-            const { x } = activePoint.tooltipPosition();
-            const topY = yAxis.top;
-            const bottomY = yAxis.bottom;
-            // draw line
-            ctx.save();
-            ctx.beginPath();
-            ctx.moveTo(x, topY);
-            ctx.lineTo(x, bottomY);
-            ctx.lineWidth = 1;
-            ctx.strokeStyle = '#637E0B';
-            ctx.stroke();
-            ctx.restore();
-          }
-        },
+      const maxHeight = Math.max(...getAxis('y'));
+      const minHeight = Math.min(...getAxis('y'));
+      const heightFactor = (canvas.height - 25) / maxHeight;
+      const widthFactor = canvas.width / Number(pt[pt.length - 1][0]);
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // x axis
+      ctx.beginPath();
+      ctx.moveTo(0, canvas.height - 0);
+      ctx.lineTo(canvas.width, canvas.height - 0);
+      ctx.stroke();
+      ctx.fillText(pt[pt.length - 1][0] + 'km', canvas.width - 50, canvas.height - 2);
+      //y axis
+      ctx.beginPath();
+      ctx.moveTo(1, 0);
+      ctx.lineTo(0, canvas.height);
+      ctx.stroke();
+      ctx.fillText(minHeight + 'm', 2, canvas.height - 2);
+      ctx.fillText(maxHeight + 'm', 2, 10);
+
+      ctx.beginPath();
+      ctx.moveTo(0, canvas.height - 12);
+      pt.forEach(point => {
+        ctx.lineTo(Number(point[0]) * widthFactor, canvas.height - ((point[1] - minHeight) * heightFactor) - 12);
       });
+      ctx.lineTo(canvas.width, canvas.height - 12);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(156, 194, 34, 0.8)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(156, 194, 34, 0.8)';
+      ctx.stroke();
+      
+      const newCanvas = document.createElement('canvas');
+      newCanvas.id = 'mouseover';
+      newCanvas.width = 702; // 702px so that mouse pointer can get to very end
+      newCanvas.height = 100;
 
-      Chart.defaults.global.defaultFontSize = 10;
+      document.getElementById('elevation-div').appendChild(newCanvas);
+      const ctx2 = newCanvas.getContext('2d');
 
-      const ctx = document.getElementById('elevation');
-      const chart = new Chart(ctx, {
-        type: 'line',
-        data: pts,
-        options: {
-          maintainAspectRatio: false,
-          plugins: {
-
-          },
-          tooltips: {
-            enabled: true,
-            mode: 'index',
-            position: 'custom',
-            intersect: false,
-            caretSize: 0,
-            displayColors: false,
-            backgroundColor: 'rgba(100, 100, 100, 0.8)',
-            callbacks: {
-              title() { return ''; },
-              label(item) {
-                onmouseover(item);
-                return `${item.yLabel}m  ${(item.xLabel / 1.609).toFixed(3)} miles`;
-              },
-            },
-          },
-          legend: {
-            display: false,
-          },
-          scales: {
-            yAxes: [{
-              scaleLabel: {
-                display: true,
-                labelString: 'metres',
-              },
-              gridLines: {
-                display: false,
-              },
-            }],
-            xAxes: [{
-              scaleLabel: {
-                display: true,
-                labelString: 'Km',
-              },
-              gridLines: {
-                display: false,
-              },
-            }],
-          },
-        },
-      });
-    },
-
+      newCanvas.addEventListener('touchmove', (e) => onmouseover(e.changedTouches[0]));
+      newCanvas.addEventListener('mousemove', onmouseover);
+      
+      newCanvas.addEventListener('mouseout', onmouseout);
+      newCanvas.addEventListener('touchend', onmouseout);
+    }
   });
 
 export default (options) => {

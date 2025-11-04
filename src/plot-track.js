@@ -52,6 +52,13 @@ L.Control.PlotTrack = L.Control.extend({
         const reset = L.DomUtil.create('button', 'button', divInfo);
         reset.innerHTML = 'Reset';
 
+        const distanceDiv = L.DomUtil.create('span', '', divInfo);
+        distanceDiv.style.margin = '20px';
+
+        let wpts = [];
+        let markerGroup = L.layerGroup().addTo(map);
+
+        let polyline = L.polyline([], { weight: 2 }).addTo(map);
         let el;
 
         L.DomEvent.on(elev, 'click', async () => {
@@ -59,8 +66,8 @@ L.Control.PlotTrack = L.Control.extend({
           const { orsAPI } = await import('./config.js');
           let wpt = [];
           for (let i = 0; i < wpts.length; i++) {
-            wpt.push(Object.values(wpts[i]).reverse());
-          }
+            wpt.push([wpts[i].lng, wpts[i].lat]);
+          };
           await fetch(`https://api.openrouteservice.org/elevation/line`, {
             method: 'POST',
             headers: {
@@ -100,14 +107,6 @@ L.Control.PlotTrack = L.Control.extend({
           wpts = [];
           distanceDiv.innerHTML = '';
         });
-
-        const distanceDiv = L.DomUtil.create('span', '', divInfo);
-        distanceDiv.style.margin = '20px';
-
-        let wpts = [];
-        let markerGroup = L.layerGroup().addTo(map);
-
-        let polyline = L.polyline([], { weight: 2 }).addTo(map);
 
         function getBearing(p1, p2) {
           const lat1 = p1.lat / 180 * Math.PI;
