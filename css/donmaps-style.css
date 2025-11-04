@@ -250,8 +250,8 @@ div.input-elems p {
 .elev-window {
 	position: relative;
 	background: rgba(156, 194, 34, 0.2);
-	width: 95vw;
-	max-width: 720px;
+	width: 320px;
+	max-width: 95vw;
 	max-height: 120px;
 	box-shadow: 4px 4px 4px 4px rgba(0, 0, 0, 0.1), 0 4px 4px 4px rgba(0, 0, 0, 0.1);
 	border: 1px #fff;
@@ -262,6 +262,8 @@ div.input-elems p {
 	position: relative;
 	top: 0;
 	left: 0;
+	width: 300px;
+	max-width: 90vw;
 	height: 75px;
 	z-index: -1;
 }
@@ -269,6 +271,7 @@ div.input-elems p {
 	position: absolute;
 	top: 0;
 	left: 9px; /*  9px so that mouse pointer can get to very start */
+	width: 302px; /* As above */
 	z-index: 1;
 }
 

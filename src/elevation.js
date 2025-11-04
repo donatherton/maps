@@ -71,13 +71,13 @@ L.Control.Elevation = L.Control.extend({
           // Tooltip on chart
           ctx2.clearRect(0, 0, newCanvas.width, newCanvas.height);
           ctx2.beginPath();
-          ctx2.moveTo(item.clientX - canvas.getBoundingClientRect().left, 40);
+          ctx2.moveTo(item.clientX - canvas.getBoundingClientRect().left, 45);
           ctx2.lineTo(item.clientX - canvas.getBoundingClientRect().left, 100);
           ctx2.lineWidth = 1;
           ctx2.strokeStyle = '#637E0B';
           ctx2.stroke();
-          ctx2.fillText(h, item.clientX - canvas.getBoundingClientRect().left + 2, 50);
-          ctx2.fillText(d, item.clientX - canvas.getBoundingClientRect().left + 2, 60);
+          ctx2.fillText(h, item.clientX - canvas.getBoundingClientRect().left + 2, 55);
+          ctx2.fillText(d, item.clientX - canvas.getBoundingClientRect().left + 2, 65);
       }
 
       function onmouseout() {
@@ -108,9 +108,9 @@ L.Control.Elevation = L.Control.extend({
 
       const canvas = document.createElement('canvas');
       canvas.id = 'elevation'; 
-      canvas.width = 700;
+      //canvas.width = 700;
       canvas.height = 75;
-      canvas.style.maxWidth = '90vw';
+      //canvas.style.maxWidth = '90vw';
       document.getElementById('elevation-div').appendChild(canvas);
 
       const ctx = canvas.getContext('2d');
@@ -149,7 +149,7 @@ L.Control.Elevation = L.Control.extend({
       
       const newCanvas = document.createElement('canvas');
       newCanvas.id = 'mouseover';
-      newCanvas.width = 702; // 702px so that mouse pointer can get to very end
+     // newCanvas.width = 702; // 702px so that mouse pointer can get to very end
       newCanvas.height = 100;
 
       document.getElementById('elevation-div').appendChild(newCanvas);
