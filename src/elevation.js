@@ -69,9 +69,9 @@ L.Control.Elevation = L.Control.extend({
       // Calc which index on coords array
       const dist = (item.clientX - canvas.getBoundingClientRect().left) / canvas.getBoundingClientRect().width * Number(pt[pt.length - 1][0]);
       let index = 0;
-      while (index < pt.length - 1 && pt[index][0] <= dist) {
+      while (index < pt.length - 1 && pt[index + 1][0] <= dist) {
         index++;
-      } 
+      }
       // Add marker on polyline
       const d = (pt[index][0] * distUnitFactor).toFixed(3);
       const h = (pt[index][1] * heightUnitFactor).toFixed(0);
@@ -112,7 +112,7 @@ L.Control.Elevation = L.Control.extend({
     // Make the array with x and y axis data
     pt[0] = [0, coords[0].alt];
     let d = 0;
-    for (let i = 1; i < coords.length; i += 1) {
+    for (let i = 1; i < coords.length; i++) {
       d += distanceBetween(coords[i], coords[i - 1]);
       pt.push([(d / 1000).toFixed(3), Math.round(coords[i].alt)]);
     }

@@ -245,9 +245,7 @@ L.Control.PlotRoute = L.Control.extend({
               spotMarker = new L.CircleMarker(waypointLatlng).addTo(map);
             });
             L.DomEvent.addListener(p, 'mouseout', () => {
-              if (typeof(spotMarker) !== 'undefined') {
-                if (map.hasLayer(spotMarker)) map.removeLayer(spotMarker);
-              }
+              if (map.hasLayer(spotMarker)) map.removeLayer(spotMarker);
             });
             L.DomEvent.addListener(p, 'click', (e) => {
               map.setView(waypointLatlng, 17);
