@@ -1,0 +1,83 @@
+import * as L from './leaflet-src.esm.js';
+
+L.Control.Prefs = L.Control.extend({
+  options: {
+    position: 'topright',
+  },
+  // onRemove(map) {
+
+  // },
+  onAdd(map) {
+    const button = L.DomUtil.create('div',  'leaflet-bar leaflet-control leaflet-control-custom button');
+    button.id = 'prefs-button';
+    button.innerHTML = '<span style="font-size:10px; font-weight:bold; margin: 2px">Prefs</span>';
+    button.title = 'Set preferences';
+    // button.style.height = 'auto';
+    // button.style.minHeight = '30px';
+
+    function stopEventPropagation(elem) {
+      L.DomEvent.on(elem, 'click contextmenu mousedown mousewheel dblclick', L.DomEvent.stopPropagation);
+    }
+
+    let prefsWindow;
+
+    stopEventPropagation(button);
+
+    L.DomEvent.on(button, 'click', () => {
+      if (!prefsWindow) {
+        prefsWindow = L.DomUtil.create('div', '', button);
+        prefsWindow.id = 'prefsWindow';
+        prefsWindow.style.width = '200px';
+        prefsWindow.style.height = 'auto';
+        prefsWindow.style.padding = '10px';
+        prefsWindow.style.position = 'relative';
+        prefsWindow.style.top = '0px';
+
+        stopEventPropagation(prefsWindow);
+
+        const units = [localStorage.getItem('dist'), localStorage.getItem('height')];
+        if (!units[0]) units[0] = 'km';
+        if (!units[1]) units[1] = 'm';
+
+        let k, miles, metres, ft = '';
+        units[0] === 'km' ? k = 'checked' : miles = 'checked';
+        units[1] === 'm' ? metres = 'checked' : ft = 'checked';
+
+        prefsWindow.innerHTML = 
+          `<p><strong>Distance</strong></p>
+          <form id="units">
+          <label><input type="radio" value="km" name="dist" ${k}>Km</label>
+          <label><input type="radio" value="miles" name="dist" ${miles}>Miles</label>
+          </form>
+          <form id="height">
+          <p><strong>Height</strong></p>
+          <label><input type="radio" value="m" name="height" ${metres}>Metres</label>
+          <label><input type="radio" value="ft" name="height" ${ft}>Feet</label>
+          </form>
+          <button id="close">Close</button>`;
+
+        L.DomEvent.on(map, 'click', () => {
+          closePrefs();
+        });
+        L.DomEvent.on(prefsWindow, 'click', e => {
+          if (e.target.id === 'close') {
+            closePrefs();
+          } else localStorage.setItem(e.target.name, e.target.value);
+        });
+
+        function closePrefs() {
+          if (prefsWindow) {
+            L.DomUtil.remove(prefsWindow);
+            prefsWindow = null;
+          }
+        }
+      }
+    })
+    return button;
+  }
+});
+
+export default (options) => {
+  return new L.Control.Prefs(options);
+};
+
