@@ -17,8 +17,8 @@ L.Control.LoadGPX = L.Control.extend({
         popupAnchor: [2, -6], // point from which the popup should open relative to the iconAnc
       });
 
-      const button = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom load_button');
-      button.innerHTML = '<span style="font-size:10px; font-weight:bold">GPX</span>';
+      const button = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom load-gpx button');
+     // button.innerHTML = '<span style="font-size:10px; font-weight:bold">Load<br>GPX</span>';
       button.title = 'Load a GPX file';
 
       L.DomEvent.on(button, 'click contextmenu mousedown mousewheel dblclick', L.DomEvent.stopPropagation);
@@ -34,6 +34,8 @@ L.Control.LoadGPX = L.Control.extend({
         const coords = [];
         let lngth = 0;
         let tags;
+        const unit = localStorage.getItem('dist') === 'km' ? 'Km' : 'miles';
+        const factor = unit === 'km' ? 1.609344 : 1;
 
         if (gpxFile.getElementsByTagName('trk').length > 0) {
           tags = 'trkpt';
@@ -43,7 +45,7 @@ L.Control.LoadGPX = L.Control.extend({
           alert("Sorry, this file can't be loaded");
         }
 
-        function distance(lat1, lon1, lat2, lon2, unit) {
+        function distance(lat1, lon1, lat2, lon2) {
           if ((lat1 === lat2) && (lon1 === lon2)) {
             return 0;
           }
@@ -58,8 +60,6 @@ L.Control.LoadGPX = L.Control.extend({
           dist = Math.acos(dist);
           dist = (dist * 180) / Math.PI;
           dist = dist * 60 * 1.1515;
-          if (unit === 'K') { dist *= 1.609344; }
-          //  if (unit==="N") { dist = dist * 0.8684 }
           return dist;
         }
 
@@ -79,7 +79,7 @@ L.Control.LoadGPX = L.Control.extend({
           }
         }
 
-        const popupText = `<p>${name}</p><p>${lngth.toFixed(2)} miles</p>`;
+        const popupText = `<p>${name}</p><p>${(lngth * factor).toFixed(3)} ${unit}</p>`;
 
         const polyline = new L.Polyline(coords).setStyle({
           color: 'red',

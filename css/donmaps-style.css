@@ -11,19 +11,21 @@ html, body {
 }
 .button {
 	background-color: #fff;
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: cover;
 	border: 1px solid #ccc;
 	border-radius: 5px;
 	padding: 1px 2px;
 	text-align: center;
-	text-decoration: none;
 	margin: 2px 2px;
 	cursor: pointer;
 	font:12px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif;
 }
-.button:hover{
+.button:hover, #prefs-button:hover {
 	border-color: #fff;
 }
-.button:active{
+.button:active, #prefs-button:active {
 	background-color:#999999;
 }
 .profileSelect {
@@ -40,96 +42,67 @@ html, body {
 .location-button {
 	width: 35px;
 	height: 35px;
+
 	background-image: url(../images/location.png);
-	background-position: center;
-	background-size: 95%;
-	background-color: white;
-	cursor: pointer;
 }
 .fullscreen {
 	width: 35px;
 	height: 35px;
 	background-image: url(../images/fullscreen.png);
-	background-position: center;
-	background-size: 95%;
-	background-color: white;
-	cursor: pointer;
-
 }
 .ors-routing {
 	width: 35px;
 	height: 35px;
 	background-image: url(../images/routing_icon.png);
-	background-position: center;
-	background-size: 95%;
-	background-color: white;
-	cursor: pointer;
 }
 .ors-routing:disabled {
 	opacity: 0.5;
 	cursor: not-allowed;
 }
-.load_button {
-	width: 35px;
-	height: 35px;
-	background-color: white;
-	background-size: 95%;
-	cursor: pointer;
-	text-align: center;
-	padding: 2px 0;
-}
 .reload {
 	width: 35px;
 	height: 35px;
-	cursor: pointer;
 	background-image: url(../images/view-refresh.png);
-	background-position: center;
-	background-color: white;
-	background-size: 95%;
 }
 .load-gpx {
-	background-image: url(../images/edit-icon.png);
-	background-position: center;
+	width: 35px;
+	height: 35px;
+	background-image: url(../images/gpx.png);
 }
 .track-plotter {
 	width: 35px;
 	height: 35px;
 	background-image: url(../images/routing-icon.png);
-	background-position: center;
-	background-size: 95%;
-	background-color: white;
-	cursor: pointer;
 }
 .track-plotter:disabled {
 	opacity: 0.5;
 	cursor: not-allowed !important;
 }
-.modal {
-	display: none; /* Hidden by default */
-	position: fixed; /* Stay in place */
-	z-index: 10000; /* Sit on top */
-	left: 0;
-	top: 0;
-	width: 100%; /* Full width */
-	height: 100%; /* Full height */
-	overflow: auto; /* Enable scroll if needed */
-	background-color: rgb(0,0,0); /* Fallback color */
-	background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-}
+/* .modal { */
+/* 	display: none; /1* Hidden by default *1/ */
+/* 	position: fixed; /1* Stay in place *1/ */
+/* 	z-index: 10000; /1* Sit on top *1/ */
+/* 	left: 0; */
+/* 	top: 0; */
+/* 	width: 100%; /1* Full width *1/ */
+/* 	height: 100%; /1* Full height *1/ */
+/* 	overflow: auto; /1* Enable scroll if needed *1/ */
+/* 	background-color: rgb(0,0,0); /1* Fallback color *1/ */
+/* 	background-color: rgba(0,0,0,0.4); /1* Black w/ opacity *1/ */
+/* } */
 
-/* Modal Content/Box */
-.modal-content {
-	background-color: #fefefe;
-	margin: 15% auto; /* 15% from the top and centered */
-	padding: 20px;
-	border: 1px solid #888;
-	border-radius: 10px;
-	width: 80%; /* Could be more or less, depending on screen size */
-}
+/* /1* Modal Content/Box *1/ */
+/* .modal-content { */
+/* 	background-color: #fefefe; */
+/* 	margin: 15% auto; /1* 15% from the top and centered *1/ */
+/* 	padding: 20px; */
+/* 	border: 1px solid #888; */
+/* 	border-radius: 10px; */
+/* 	width: 80%; /1* Could be more or less, depending on screen size *1/ */
+/* } */
 /* The Close Button */
 .close {
 	color: #000;
-	/*	float: right;*/
 	font-size: 28px;
 	font-weight: bold;
 }
@@ -241,11 +214,23 @@ div.input-elems p {
 .search-button {
 	width: 35px;
 	height: 35px;
+	background-image: url('../images/search-icon.png');
+}
+#prefs-button {
+	width: auto;
+	height: auto;
+	min-height: 30px;
 	display:block;
-	background: url('../images/search-icon.png') no-repeat 2px 2px #fff;
 	background-size: 95%;
-	border-radius:4px;
+	background-color: #fff;
+	border: 2px solid #ccc;
+	border-radius: 5px;
+	padding: 1px 2px;
+	text-align: center;
+	margin: 10px;
 	cursor: pointer;
+	font:12px/1.5 "Helvetica Neue", Arial, Helvetica, sans-serif;
+
 }
 .elev-window {
 	position: relative;

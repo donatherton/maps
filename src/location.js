@@ -6,7 +6,7 @@ L.Control.FindLocation = L.Control.extend({
     },
 
     onAdd(map) {
-      const button = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom location-button');
+      const button = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom location-button button');
       button.title = 'Get your current location';
       
       L.DomEvent.on(button, 'click contextmenu mousedown mousewheel dblclick', L.DomEvent.stopPropagation);

@@ -6,7 +6,7 @@ L.Control.PlotTrack = L.Control.extend({
       position: 'topleft',
     },
     onAdd(map) {
-      const button = L.DomUtil.create('button', 'leaflet-bar leaflet-control leaflet-control-custom track-plotter');
+      const button = L.DomUtil.create('button', 'leaflet-bar leaflet-control leaflet-control-custom track-plotter button');
       button.title = 'Measure / plot route manually';
       button.id = 'plotter';
 
@@ -127,7 +127,7 @@ L.Control.PlotTrack = L.Control.extend({
             for (i = 1; i < wpts.length; i++) {
               distance += wpts[i].distanceTo(wpts[i - 1]);
             }
-            if (distance > 1609) {
+            if (localStorage.getItem('dist') === 'miles') {
               distance /= 1609.34;
               unit = ' miles';
               distance = distance.toFixed(2)

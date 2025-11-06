@@ -10,7 +10,9 @@ L.Control.PlotRoute = L.Control.extend({
       position: 'topleft',
     },
     onAdd(map) {
-      const button = L.DomUtil.create('button', 'leaflet-bar leaflet-control leaflet-control-custom ors-routing');
+      let el = elevation();
+      
+      const button = L.DomUtil.create('button', 'leaflet-bar leaflet-control leaflet-control-custom ors-routing button');
       button.title = 'Get route with OpenRouteService';
       button.id = 'ors-router';
 
@@ -37,6 +39,10 @@ L.Control.PlotRoute = L.Control.extend({
         document.getElementById('ors-router').setAttribute('disabled', 'disabled');
 
         L.Control.InfoWindow = L.Control.extend({
+          options: {
+          position: 'topright',
+        },
+
           onAdd(map) {
             divInfo = L.DomUtil.create('div', 'info-window');
             divInfo.id = 'divInfo';
@@ -70,10 +76,6 @@ L.Control.PlotRoute = L.Control.extend({
 
         const dlButton = L.DomUtil.create('button', 'button', buttonDiv);
         dlButton.innerHTML = 'Save as GPX';
-
-        // elevation diagram
-        const el = elevation();
-        el.addTo(map);
 
         const startIcon = L.icon({
           iconUrl: 'images/marker-start-icon-2x.png',
@@ -228,6 +230,10 @@ L.Control.PlotRoute = L.Control.extend({
         }
 
         function loadRoute(request) {
+          if (request.error) {
+            alert(request.error.message);
+            return
+          }
           let p;
           function addRowListener(wpt, coord) {
             let waypoint;
@@ -255,14 +261,15 @@ L.Control.PlotRoute = L.Control.extend({
           coords = decodePolyline(coords);
 
           let { distance } = route.properties.summary;
-          if (distance > 1609) distance = `${(distance / 1609.34).toFixed(2)} miles`;
+          const unit = localStorage.getItem('dist');
+          if (unit === 'miles') distance = `${(distance / 1609.34).toFixed(2)} miles`;
           else distance = `${Math.round(distance)}m`;
           routeInfo.innerHTML = `<h4 style="margin:0">Total distance: ${distance}</h4>`;
           for (let i = 0; i < route.properties.segments.length; i=i+1) {
             for (let j = 0; j < route.properties.segments[i].steps.length; j++) {
               const step = route.properties.segments[i].steps[j];
               let stepDistance = step.distance;
-              if (stepDistance > 1609) stepDistance = `${(stepDistance / 1609.34).toFixed(2)} miles`;
+              if (unit === 'miles') stepDistance = `${(stepDistance / 1609.34).toFixed(2)} miles`;
               else stepDistance += 'm';
               p = L.DomUtil.create('p', 'route-info', routeInfo);
               p.innerHTML = `- ${step.instruction} (${stepDistance})`;
@@ -304,8 +311,8 @@ L.Control.PlotRoute = L.Control.extend({
             .on('mouseup', onDragEnd);
 
           map.fitBounds(polyline.getBounds());
-
           // Add elevation diagram
+          el.addTo(map);
           el.addData(coords, map);
         }
 
@@ -339,6 +346,7 @@ L.Control.PlotRoute = L.Control.extend({
             })
               .then(response => response.json())
               .then(request => loadRoute(request))
+              .catch(err => console.log(`Error: ${err}`));
           }
         }
 
@@ -378,32 +386,20 @@ L.Control.PlotRoute = L.Control.extend({
           profileSelect.innerHTML += `<input type="radio" id="${profiles[key]}" 
             name="profile" value="${profiles[key]}"${checked}>  <label for="${profiles[key]}">${key}</label>`;
         }
-        L.DomEvent.on(profileSelect, 'click', () => {
-          const radioValue = document.getElementsByName('profile');
-          for (let i = 0; i < radioValue.length; i = i + 1) {
-            if (radioValue[i].checked) {
-              profile = radioValue[i].value;
-              routeRequest();
-              return;
-            }
-          }
-        });
 
         const pref = L.DomUtil.create('div', '', profileSelect);
         pref.innerHTML = `<label><input type="radio" id ="shortest" name="pref" value="shortest" checked>
           Shortest</label><label><input type="radio" id ="fastest" name="pref" value="fastest">Fastest</label>
           <label><input type="checkbox" id="other_prefs" name="ferry" checked>Avoid ferries</label>`;
 
-        L.DomEvent.on(pref, 'click', (() => {
-          const radioValue = document.getElementsByName('pref');
-          for (let i = 0; i < radioValue.length; i++) {
-            if (radioValue[i].checked) {
-              preference = radioValue[i].value;
-              routeRequest();
-              return;
-            }
-          }
-        }));
+        L.DomEvent.on(profileSelect, 'click', (e) => {
+          if (e.target.name === 'profile') {
+            profile = e.target.value;
+          } else if (e.target.name === 'pref') {
+            preference = e.target.value;
+          } 
+          routeRequest();
+        });
       });
       return button;
     }

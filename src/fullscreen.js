@@ -6,7 +6,7 @@ L.Control.FullScreen = L.Control.extend({
     },
 
     onAdd(map) {
-      const button = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom fullscreen');
+      const button = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom fullscreen button');
       button.title = 'Fullscreen';
 
       L.DomEvent.on(button, 'click contextmenu mousedown mousewheel dblclick', L.DomEvent.stopPropagation);

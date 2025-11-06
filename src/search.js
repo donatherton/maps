@@ -6,7 +6,7 @@ L.Control.PlaceSearch = L.Control.extend({
     },
 
     onAdd(map) {
-      const button = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom search-button');
+      const button = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom search-button button');
       button.title = 'Search';
 
       function stopEventPropagation(elem) {

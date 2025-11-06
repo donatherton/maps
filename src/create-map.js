@@ -6,6 +6,7 @@ import plotRoute from './plot-route.js';
 import loadGPX from './load-gpx.js';
 import findLocation from './location.js';
 import fullScreen from './fullscreen.js';
+import prefs from './prefs.js';
 
 export default () => {
   const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
@@ -78,18 +79,19 @@ export default () => {
   onmouseup = () => {
     document.getElementById('map').style.cursor = 'grab';
   }
-  // Add plugin buttons
+    // Add plugin buttons
   placeSearch().addTo(map);
   findLocation().addTo(map);
   plotTrack().addTo(map);
   plotRoute().addTo(map);
   loadGPX().addTo(map);
   fullScreen().addTo(map);
+  prefs().addTo(map);
   
   // Reload button
   L.Control.Reload = L.Control.extend({
     onAdd(map) {
-      const reloadButton = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom reload');
+      const reloadButton = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom reload button');
       reloadButton.setAttribute('title', 'Reload map at this location and zoom');
 
       L.DomEvent.on(reloadButton, 'click contextmenu mousedown mousewheel dblclick', L.DomEvent.stopPropagation);
