@@ -45,17 +45,26 @@ export default () => {
     Openseamap: sea,
   };
 
-  /* If local storage contains centre and zoom, default values if not */
-  const args = JSON.parse(sessionStorage.getItem('vars'));
-  let centre, zoom, lat, lng, layerId;
-  if (args) {
-    ({ lat, lng, zoom, layerId} = args);
-    centre = [lat, lng];
+  /* If session storage contains centre and zoom, default values if not */
+  let centre, zoom; //, lat, lng;
+  //const vars = JSON.parse(sessionStorage.getItem('vars'));
+  const centreAndZoom = JSON.parse(localStorage.getItem('userDefaultLocation'))
+  let layerId;// = sessionStorage.getItem('layerId');
+
+  // if (vars && layerId) {
+  //   ({ lat, lng, zoom } = vars);
+  //   centre = [lat, lng];
+  // } else 
+  if (centreAndZoom) {
+    centre = [centreAndZoom.lat, centreAndZoom.lng];
+    zoom = centreAndZoom.zoom;
+    layerId = centreAndZoom.layerId;
   } else {
     centre = defaultLocation;
     zoom = defaultZoom;
     layerId =  defaultLayer;
   }
+
   let layer = baseMaps[Object.keys(baseMaps).find(key => baseMaps[key].options.id === layerId)];
 
   const map = new L.Map('map', {
@@ -69,7 +78,8 @@ export default () => {
 
   // Listen for base layer change
   map.on('baselayerchange', function (e) {
-    layer = e.layer;
+    //layer = e.layer;
+    sessionStorage.setItem('layerId', e.layer.options.id);
   });
 
   // Set cursors
@@ -89,29 +99,30 @@ export default () => {
   prefs().addTo(map);
   
   // Reload button
-  L.Control.Reload = L.Control.extend({
-    onAdd(map) {
-      const reloadButton = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom reload button');
-      reloadButton.setAttribute('title', 'Reload map at this location and zoom');
+  // L.Control.Reload = L.Control.extend({
+  //   onAdd(map) {
+  //     const reloadButton = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom reload button');
+  //     reloadButton.setAttribute('title', 'Reload map at this location and zoom');
 
-      L.DomEvent.on(reloadButton, 'click contextmenu mousedown mousewheel dblclick', L.DomEvent.stopPropagation);
+  //     L.DomEvent.on(reloadButton, 'click contextmenu mousedown mousewheel dblclick', L.DomEvent.stopPropagation);
 
-      L.DomEvent.on(reloadButton, 'click', () => {
-        const centre = map.getCenter();
-        const zoom = map.getZoom();
+  //     L.DomEvent.on(reloadButton, 'click', () => {
+  //       const centre = map.getCenter();
+  //       const zoom = map.getZoom();
 
-        sessionStorage.setItem('vars', `{"lat": ${centre.lat}, "lng": ${centre.lng}, "zoom": ${zoom}, "layerId": "${layer.options.id}"}`);
+  //       sessionStorage.setItem('vars', `{"lat": ${centre.lat}, "lng": ${centre.lng}, "zoom": ${zoom}}`);
+  //       sessionStorage.setItem('layerId', layer.options.id);
 
-        window.location.reload();
-      });
-      return reloadButton;
-    },
-  });
+  //       window.location.reload();
+  //     });
+  //     return reloadButton;
+  //   },
+  // });
 
-  L.control.reload = (option) => {
-    return new L.Control.Reload(option);
-  };
-  L.control.reload({ position: 'topleft' }).addTo(map);
+  // L.control.reload = (option) => {
+  //   return new L.Control.Reload(option);
+  // };
+  // L.control.reload({ position: 'topleft' }).addTo(map);
 
   function getGeoData(e) {
     const infoPopup = L.popup();

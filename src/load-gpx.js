@@ -6,19 +6,7 @@ L.Control.LoadGPX = L.Control.extend({
     },
 
     onAdd(map) {
-      const startIcon = new L.DivIcon({
-        className: 'starticon',
-        iconSize: [15, 15],
-        popupAnchor: [2, -6], // point from which the popup should open relative to the iconAnc
-      });
-      const endIcon = new L.DivIcon({
-        className: 'endicon',
-        iconSize: [15, 15],
-        popupAnchor: [2, -6], // point from which the popup should open relative to the iconAnc
-      });
-
       const button = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom load-gpx button');
-     // button.innerHTML = '<span style="font-size:10px; font-weight:bold">Load<br>GPX</span>';
       button.title = 'Load a GPX file';
 
       L.DomEvent.on(button, 'click contextmenu mousedown mousewheel dblclick', L.DomEvent.stopPropagation);
@@ -30,12 +18,50 @@ L.Control.LoadGPX = L.Control.extend({
       fileInput.style.display = 'none';
 
       function loadGPX(gpxFile) {
+        L.Control.ResetWindow = L.Control.extend({
+          onAdd(map) {
+            const resetButton = L.DomUtil.create('button', 'button');
+            resetButton.id = 'reset';
+            resetButton.style.width = 'auto';
+            resetButton.style.height = '30px';
+            resetButton.innerText = 'Reset';
+
+            L.DomEvent.on(resetButton, 'click contextmenu mousedown mousewheel dblclick touchmove', L.DomEvent.stopPropagation);
+
+            L.DomEvent.on(resetButton, 'click', () => {
+            if (el) el.remove();
+            map
+              .removeControl(resetButton)
+              .removeLayer(layerGroup)
+            document.getElementById('plotter').disabled = false;
+            document.getElementById('ors-router').disabled = false;
+          });
+            return resetButton;
+          },
+        });
+        L.control.resetWindow = (options) => {
+          return new L.Control.ResetWindow(options);
+        };
+        L.control.resetWindow({ position: 'topright' }).addTo(map);
+
         let alt = null;
         const coords = [];
         let lngth = 0;
         let tags;
         const unit = localStorage.getItem('dist') === 'km' ? 'Km' : 'miles';
         const factor = unit === 'km' ? 1.609344 : 1;
+        let el;
+
+        const startIcon = new L.DivIcon({
+          className: 'starticon',
+          iconSize: [15, 15],
+          popupAnchor: [2, -6], // point from which the popup should open relative to the iconAnc
+        });
+        const endIcon = new L.DivIcon({
+          className: 'endicon',
+          iconSize: [15, 15],
+          popupAnchor: [2, -6], // point from which the popup should open relative to the iconAnc
+        });
 
         if (gpxFile.getElementsByTagName('trk').length > 0) {
           tags = 'trkpt';
@@ -79,26 +105,28 @@ L.Control.LoadGPX = L.Control.extend({
           }
         }
 
+        const layerGroup = L.layerGroup().addTo(map);
+
         const popupText = `<p>${name}</p><p>${(lngth * factor).toFixed(3)} ${unit}</p>`;
 
         const polyline = new L.Polyline(coords).setStyle({
           color: 'red',
-        }).addTo(map).bindPopup(popupText);
+        }).addTo(layerGroup).bindPopup(popupText);
 
         map.fitBounds(polyline.getBounds());
 
         new L.Marker(coords[0], {
           icon: startIcon,
-        }).addTo(map).bindPopup(popupText);
+        }).addTo(layerGroup).bindPopup(popupText);
         new L.Marker(coords[coords.length - 1], {
           icon: endIcon,
-        }).addTo(map).bindPopup(popupText);
+        }).addTo(layerGroup).bindPopup(popupText);
 
         // Elevation diagram
         if (hasAlts) {
           import('./elevation.js')
             .then( elevation => {
-            const el = elevation.default();
+            el = elevation.default();
             el.addTo(map);
             el.addData(coords, map);
            });

@@ -16,7 +16,7 @@ L.Control.Prefs = L.Control.extend({
     // button.style.minHeight = '30px';
 
     function stopEventPropagation(elem) {
-      L.DomEvent.on(elem, 'click contextmenu mousedown mousewheel dblclick', L.DomEvent.stopPropagation);
+      L.DomEvent.on(elem, 'click contextmenu mousedown mousewheel dblclick touchmove', L.DomEvent.stopPropagation);
     }
 
     let prefsWindow;
@@ -53,6 +53,7 @@ L.Control.Prefs = L.Control.extend({
           <p><strong>Height</strong></p>
           <label><input type="radio" value="m" name="height" ${metres}>Metres</label>
           <label><input type="radio" value="ft" name="height" ${ft}>Feet</label>
+          <p><label><input type="checkbox" id="userDefaultLocation">Save current location and map as default?</label></p>
           </form>
           <button id="close">Close</button>`;
 
@@ -62,7 +63,14 @@ L.Control.Prefs = L.Control.extend({
         L.DomEvent.on(prefsWindow, 'click', e => {
           if (e.target.id === 'close') {
             closePrefs();
-          } else localStorage.setItem(e.target.name, e.target.value);
+          } else if (e.target.id === 'userDefaultLocation' && e.target.checked === true) {
+            const centre = map.getCenter();
+            let mapLayer = sessionStorage.getItem('layerId');
+            mapLayer ? mapLayer : mapLayer = 'osm';
+            localStorage.setItem('userDefaultLocation', `{"lat": ${centre.lat}, "lng": ${centre.lng}, "zoom": ${map.getZoom()}, "layerId": "${mapLayer}"}`);
+          } else if (e.target.name === 'dist' || e.target.name === 'height') {
+              localStorage.setItem(e.target.name, e.target.value);
+          }
         });
 
         function closePrefs() {

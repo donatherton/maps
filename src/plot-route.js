@@ -17,7 +17,7 @@ L.Control.PlotRoute = L.Control.extend({
       button.id = 'ors-router';
 
       function stopEventPropagation(elem) {
-        L.DomEvent.on(elem, 'click contextmenu mousedown mousewheel dblclick touchmove', L.DomEvent.stopPropagation);
+        L.DomEvent.on(elem, 'click contextmenu mousedown mouseup mousewheel dblclick touchmove', L.DomEvent.stopPropagation);
       }
 
       stopEventPropagation(button);
@@ -58,7 +58,7 @@ L.Control.PlotRoute = L.Control.extend({
         L.control.infoWindow = (options) => {
           return new L.Control.InfoWindow(options);
         };
-        L.control.infoWindow({ position: 'topright' }).addTo(map);
+        const infoWindow = L.control.infoWindow({ position: 'topright' }).addTo(map);
 
         const profileSelect = L.DomUtil.create('div', 'profileSelect', divInfo);
 
@@ -76,6 +76,19 @@ L.Control.PlotRoute = L.Control.extend({
 
         const dlButton = L.DomUtil.create('button', 'button', buttonDiv);
         dlButton.innerHTML = 'Save as GPX';
+
+        const reset = L.DomUtil.create('button', 'button', buttonDiv);
+        reset.innerHTML = 'Reset';
+        L.DomEvent.on(reset, 'click', () => {
+          if (el) el.remove();
+          map
+            .removeControl(infoWindow)
+            .removeLayer(layerGroup)
+          document.getElementById('plotter').disabled = false;
+          document.getElementById('ors-router').disabled = false;
+        });
+
+        let layerGroup = L.layerGroup().addTo(map);
 
         const startIcon = L.icon({
           iconUrl: 'images/marker-start-icon-2x.png',
@@ -139,7 +152,7 @@ L.Control.PlotRoute = L.Control.extend({
 //              L.DomUtil.remove(geoInput[i]);
               }
             }
-            map.removeLayer(e.target);
+            layerGroup.removeLayer(e.target);
             routeRequest();
 //          geoRequest(latlng, i, 'del');
           });
@@ -188,7 +201,7 @@ L.Control.PlotRoute = L.Control.extend({
             new L.Marker(e.latlng, {
               icon: icon,
               draggable: 'true',
-            }).addTo(map)
+            }).addTo(layerGroup)
               .on('dragstart', onDragStart)
               .on('dragend', onDragEnd)
               .on('contextmenu', deletePoint);
@@ -211,7 +224,7 @@ L.Control.PlotRoute = L.Control.extend({
           const newMarker = new L.Marker(e.latlng, {
             draggable: 'true',
             icon: smallIcon,
-          }).addTo(map)
+          }).addTo(layerGroup)
             .on('dragstart', onDragStart)
             .on('dragend', onDragEnd)
             .on('contextmenu', deletePoint);
@@ -223,8 +236,6 @@ L.Control.PlotRoute = L.Control.extend({
             map.off('mousemove');
             map.dragging.enable();
             map.off('mouseup');
-            setTimeout(() => {
-            }, 10);
             insertPoint(e.latlng, startPoint);
           });
         }
@@ -242,10 +253,10 @@ L.Control.PlotRoute = L.Control.extend({
             L.DomEvent.addListener(p, 'mouseover', () => {
               waypoint = wpt.way_points[0];
               waypointLatlng = coord[waypoint];
-              spotMarker = new L.CircleMarker(waypointLatlng).addTo(map);
+              spotMarker = new L.CircleMarker(waypointLatlng).addTo(layerGroup);
             });
             L.DomEvent.addListener(p, 'mouseout', () => {
-              if (map.hasLayer(spotMarker)) map.removeLayer(spotMarker);
+              if (spotMarker) spotMarker.remove();
             });
             L.DomEvent.addListener(p, 'click', (e) => {
               map.setView(waypointLatlng, 17);
@@ -253,7 +264,7 @@ L.Control.PlotRoute = L.Control.extend({
             });
           }
 
-          route = request; //JSON.parse(request);
+          route = request;
           route = route.features[0];
           coords = route.geometry.coordinates;
           coords = decodePolyline(coords);
@@ -275,13 +286,13 @@ L.Control.PlotRoute = L.Control.extend({
             }
           }
           if (polyline) {
-            if (map.hasLayer(polyline)) map.removeLayer(polyline);
+            if (polyline) polyline.remove();
           }
           if (polyline2) {
-            if (map.hasLayer(polyline2)) map.removeLayer(polyline2);
+            if (polyline2) polyline2.remove();
           }
           if (polyline3) {
-            if (map.hasLayer(polyline3)) map.removeLayer(polyline3);
+            if (polyline3) polyline3.remove();
           }
 
           polyline3 = new L.Polyline(coords).setStyle({
@@ -289,7 +300,7 @@ L.Control.PlotRoute = L.Control.extend({
             weight: '30',
             opacity: '.15',
             clickable: 'true',
-          }).addTo(map)
+          }).addTo(layerGroup)
             .on('mousedown', clickPolyline)
             .on('mouseup', onDragEnd);
           polyline2 = new L.Polyline(coords).setStyle({
@@ -297,14 +308,14 @@ L.Control.PlotRoute = L.Control.extend({
             weight: '7',
             opacity: '.8',
             clickable: 'true',
-          }).addTo(map)
+          }).addTo(layerGroup)
             .on('mousedown', clickPolyline)
             .on('mouseup', onDragEnd);
           polyline = new L.Polyline(coords).setStyle({
             color: 'red',
             weight: '2',
             clickable: 'true',
-          }).addTo(map)
+          }).addTo(layerGroup)
             .on('mousedown', clickPolyline)
             .on('mouseup', onDragEnd);
 

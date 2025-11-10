@@ -1,5 +1,4 @@
 import * as L from './leaflet-src.esm.js';
-//import { orsAPI } from './config.js';
 
 L.Control.PlotTrack = L.Control.extend({
     options: {
@@ -37,11 +36,11 @@ L.Control.PlotTrack = L.Control.extend({
         L.control.infoWindow = (options) => {
           return new L.Control.InfoWindow(options);
         };
-        L.control.infoWindow({ position: 'topright' }).addTo(map);
+        const infoWindow = L.control.infoWindow({ position: 'topright' }).addTo(map);
 
         // Disable these buttons so they don't confuse things
-        document.getElementById('ors-router').setAttribute('disabled', 'disabled');
-        document.getElementById('plotter').setAttribute('disabled', 'disabled');
+        document.getElementById('ors-router').disabled = true;
+        document.getElementById('plotter').disabled = true;
 
         const dlBtn = L.DomUtil.create('button', 'button', divInfo);
         dlBtn.innerHTML = 'Save as GPX';
@@ -83,29 +82,35 @@ L.Control.PlotTrack = L.Control.extend({
           })
             .then(response => response.json())
             .then(data => {
-              wpts.forEach((wpt, i) => {
-                wpt.alt = data.geometry[i][2];
-              });
-              // Elevation diagram
-              // Get rid of previous chart
-              if (document.getElementById('elevation-div')) {
-                L.DomUtil.remove(document.getElementById('elevation-div'));
-              }
-              el = elevation();
-              el.addTo(map);
-              el.addData(wpts, map);
+              if (data.geometry.length === wpts.length) {
+                wpts.forEach((wpt, i) => {
+                  wpt.alt = data.geometry[i][2];
+                });
+                // Elevation diagram
+                // Get rid of previous chart
+                if (document.getElementById('elevation-div')) {
+                  L.DomUtil.remove(document.getElementById('elevation-div'));
+                }
+                el = elevation();
+                el.addTo(map);
+                el.addData(wpts, map);
+              } else alert('Error: bad data returned');
           })
         })
 
         L.DomEvent.on(reset, 'click', () => {
           if (el) el.remove();
           map
+            .removeControl(infoWindow)
             .removeLayer(polyline)
             .removeLayer(markerGroup);
-          polyline = L.polyline([], { weight: 2 }).addTo(map);
-          markerGroup = L.layerGroup().addTo(map);
-          wpts = [];
-          distanceDiv.innerHTML = '';
+          document.getElementById('plotter').disabled = false;
+          document.getElementById('ors-router').disabled = false;
+
+          // polyline = L.polyline([], { weight: 2 }).addTo(map);
+          // markerGroup = L.layerGroup().addTo(map);
+          // wpts = [];
+          // distanceDiv.innerHTML = '';
         });
 
         function getBearing(p1, p2) {
@@ -140,7 +145,7 @@ L.Control.PlotTrack = L.Control.extend({
           }
         }
 
-        function onMapClick(e) {
+        function onMapClick(e) { console.log(e);
           const newMarker = new L.Marker(e.latlng, {
             draggable: 'true',
             icon: smallIcon,
