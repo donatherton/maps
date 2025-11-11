@@ -87,6 +87,7 @@ L.Control.PlotRoute = L.Control.extend({
           map
             .removeControl(infoWindow)
             .removeLayer(layerGroup)
+            .off('contextmenu', popup)
           document.getElementById('plotter').disabled = false;
           document.getElementById('ors-router').disabled = false;
         });

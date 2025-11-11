@@ -1,5 +1,5 @@
 import * as L from './leaflet-src.esm.js';
-import { tfAPI, defaultLocation, defaultZoom, defaultLayer } from './config.js';
+import { orsAPI, tfAPI, defaultLocation, defaultZoom, defaultLayer } from './config.js';
 import placeSearch from './search.js';
 import plotTrack from './plot-track.js';
 import plotRoute from './plot-route.js';
@@ -46,15 +46,10 @@ export default () => {
   };
 
   /* If session storage contains centre and zoom, default values if not */
-  let centre, zoom; //, lat, lng;
-  //const vars = JSON.parse(sessionStorage.getItem('vars'));
+  let centre, zoom;
   const centreAndZoom = JSON.parse(localStorage.getItem('userDefaultLocation'))
-  let layerId;// = sessionStorage.getItem('layerId');
+  let layerId;
 
-  // if (vars && layerId) {
-  //   ({ lat, lng, zoom } = vars);
-  //   centre = [lat, lng];
-  // } else 
   if (centreAndZoom) {
     centre = [centreAndZoom.lat, centreAndZoom.lng];
     zoom = centreAndZoom.zoom;
@@ -97,38 +92,12 @@ export default () => {
   loadGPX().addTo(map);
   fullScreen().addTo(map);
   prefs().addTo(map);
-  
-  // Reload button
-  // L.Control.Reload = L.Control.extend({
-  //   onAdd(map) {
-  //     const reloadButton = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom reload button');
-  //     reloadButton.setAttribute('title', 'Reload map at this location and zoom');
-
-  //     L.DomEvent.on(reloadButton, 'click contextmenu mousedown mousewheel dblclick', L.DomEvent.stopPropagation);
-
-  //     L.DomEvent.on(reloadButton, 'click', () => {
-  //       const centre = map.getCenter();
-  //       const zoom = map.getZoom();
-
-  //       sessionStorage.setItem('vars', `{"lat": ${centre.lat}, "lng": ${centre.lng}, "zoom": ${zoom}}`);
-  //       sessionStorage.setItem('layerId', layer.options.id);
-
-  //       window.location.reload();
-  //     });
-  //     return reloadButton;
-  //   },
-  // });
-
-  // L.control.reload = (option) => {
-  //   return new L.Control.Reload(option);
-  // };
-  // L.control.reload({ position: 'topleft' }).addTo(map);
 
   function getGeoData(e) {
     const infoPopup = L.popup();
     infoPopup
       .setLatLng(e.latlng)
-      .setContent(`${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}<br /><button class="button" id="geo">What's here?</button>`)
+      .setContent(`${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}<br /><button class="button" id="geo">What's around here?</button>`)
       .openOn(map);
     document.getElementById('geo').onclick = () => {
       geoDataRequest(e);
@@ -137,14 +106,26 @@ export default () => {
   }
   map.on('contextmenu', getGeoData);
 
+  let markerGroup;
+
+  map.on('click', () => {
+    if (markerGroup) markerGroup.remove();
+  });
+
   function geoDataRequest(e) {
-    fetch(`https://nominatim.openstreetmap.org/?addressdetails=1&q=${e.latlng.lat},${e.latlng.lng}&format=json&limit=1`)
-      .then(response => response.json())
-      .then(geoLabel => {
-        L.popup()
-          .setContent(`<a href="https://duckduckgo.com/?q=${geoLabel[0].display_name}" target="_blank">${geoLabel[0].display_name}</a>`)
-          .setLatLng([geoLabel[0].lat, geoLabel[0].lon])
-          .openOn(map);
-      })
+    if (markerGroup) markerGroup.remove();
+    fetch(`https://api.openrouteservice.org/geocode/reverse?api_key=${orsAPI}&point.lon=${e.latlng.lng}&point.lat=${e.latlng.lat}&layers=address%2Cvenue`)
+    .then(response => response.json())
+    .then(result => {
+      let coords = [];
+      markerGroup = L.layerGroup().addTo(map);
+      const geolabel = (result.features);
+      for (let i = 0; i < geolabel.length; i++) {
+        coords = geolabel[i].geometry.coordinates.reverse();
+        const newMarker = L.marker(coords).addTo(markerGroup);
+        var popupContent = geolabel[i].properties.label;
+        newMarker.bindPopup(`<a href="https://duckduckgo.com/?q=${popupContent}" target="_blank">${popupContent}</a>`);
+      }
+    })
   }
 }
