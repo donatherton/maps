@@ -30,7 +30,7 @@ L.Control.PlotRoute = L.Control.extend({
         let polyline; // red centre
         let polyline2; // white border
         let polyline3; // black edge
-        const geolabel = [];
+        const geoLabel = [];
         let thisMarker;
         let divInfo;
 
@@ -41,11 +41,11 @@ L.Control.PlotRoute = L.Control.extend({
         L.Control.InfoWindow = L.Control.extend({
           options: {
           position: 'topright',
-        },
+          },
 
           onAdd(map) {
             divInfo = L.DomUtil.create('div', 'info-window');
-            divInfo.id = 'divInfo';
+            divInfo.id = 'div-info';
             divInfo.style.overflow = 'visible';
             divInfo.style.width = '80vw';
             divInfo.style.height = 'auto';
@@ -64,6 +64,9 @@ L.Control.PlotRoute = L.Control.extend({
 
         const buttonDiv = L.DomUtil.create('div', 'info-window-inner', divInfo);
         buttonDiv.style.overflow = 'visible';
+        
+        var geoInfo = L.DomUtil.create('div','info-window-inner input-elems', divInfo);
+        geoInfo.id = 'geo-info';
 
         const routeInfo = L.DomUtil.create('div', 'info-window-inner', divInfo);
         routeInfo.id = 'routeInfo';
@@ -115,6 +118,24 @@ L.Control.PlotRoute = L.Control.extend({
           })
         }
 
+        function geoRequest(coord, wp, whatToDo) {
+          fetch(`https://nominatim.openstreetmap.org/reverse?lat=${coord.lat}&lon=${coord.lng}&addressdetails=1&format=json`)
+            .then(response => response.json())
+            .then(result => {
+              switch (whatToDo) {
+                case 'change': geoLabel[wp] = result.address.postcode || `${result.lat}, ${result.lon}`; break;
+                case 'ins': geoLabel.splice(wp, 0, result.address.postcode || `${result.lat}, ${result.lon}`); break;
+                case 'del': geoLabel.splice(wp, 1); break;
+              }
+              geoInfo.innerHTML = '';
+              geoLabel.forEach((label) => {
+                geoInfo.innerHTML += `<p>${label}</p>`;
+              });
+              //if (geoLabel[wp] != undefined) geoInput[wp].value = geoLabel[wp];
+            })
+            .catch(err => console.log(`Error: ${err}`));
+		    }
+
         function insertPoint(latlon, startPoint) {
           // Calculate between which waypoints it should go.
           let minDist = Number.MAX_VALUE;
@@ -127,15 +148,15 @@ L.Control.PlotRoute = L.Control.extend({
               minIndex = i;
               minDist = d;
             }
-            i=i-1;
+            i = i - 1;
           }
           let j = route.properties.way_points.length - 1;
           while (j >= 0 && route.properties.way_points[j] > minIndex) {
-            j=j-1;
+            j = j - 1;
           }
           wpts.splice(j + 1, 0, latlon);
           routeRequest();
-//        geoRequest(latlon, newIndex, 'ins');
+          geoRequest(latlon, j + 1, 'ins');
         }
 
         function deletePoint(e) {
@@ -145,16 +166,17 @@ L.Control.PlotRoute = L.Control.extend({
           e.target.bindPopup(delPopup).openPopup();
           L.DomEvent.on(delBtn, 'click', () => {
             latlng = e.target.getLatLng();
-            for (let i = 0; i < wpts.length; i=i+1) {
+            let i;
+            for (i = 0; i < wpts.length; i=i+1) {
               if (wpts[i].lat === latlng.lat && wpts[i].lng === latlng.lng) {
                 wpts.splice(i, 1);
-                geolabel.splice(i, 1);
+                geoLabel.splice(i, 1);
 //              L.DomUtil.remove(geoInput[i]);
               }
             }
             layerGroup.removeLayer(e.target);
             routeRequest();
-//          geoRequest(latlng, i, 'del');
+            geoRequest(latlng, i, 'del');
           });
         }
 
@@ -177,7 +199,7 @@ L.Control.PlotRoute = L.Control.extend({
           } else {
             wpts[thisMarker] = latlng;
             routeRequest();
-//          geoRequest(latlng, thisMarker, 'change');
+         geoRequest(latlng, thisMarker, 'change');
           }
         }
 
@@ -206,7 +228,7 @@ L.Control.PlotRoute = L.Control.extend({
               .on('dragend', onDragEnd)
               .on('contextmenu', deletePoint);
             routeRequest();
-            //          geoRequest(e.latlng, 0, 'ins');
+            geoRequest(e.latlng, wpts.length, 'ins');
           }
         };
         map.on('contextmenu', popup);
@@ -333,9 +355,9 @@ L.Control.PlotRoute = L.Control.extend({
             if (ferry[0].checked) ferry = ['ferries']
             else ferry = [];
 
-            for (let i = 0; i < wpts.length; i=i+1) {
-              plot.push([wpts[i].lng, wpts[i].lat]);
-            }
+            wpts.forEach(wpt => {
+              plot.push([wpt.lng, wpt.lat]);
+            });
 
             const url = `https://api.openrouteservice.org/v2/directions/${profile}/geojson`;
             fetch(url, {

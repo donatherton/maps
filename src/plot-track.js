@@ -145,7 +145,7 @@ L.Control.PlotTrack = L.Control.extend({
           }
         }
 
-        function onMapClick(e) { console.log(e);
+        function onMapClick(e) {
           const newMarker = new L.Marker(e.latlng, {
             draggable: 'true',
             icon: smallIcon,

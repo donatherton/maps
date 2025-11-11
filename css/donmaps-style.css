@@ -158,13 +158,15 @@ p:hover {
 	background-color:#ddd
 }
 div.input-elems p {
-	background-color: #fff;
+	width: 90%;
 }
 .info-window-input {
 	width: 90%;
 }
-.inputElems {
-	margin: 0;
+#geo-info p {
+	border-bottom: 1px solid #555555;
+	margin: 2px;
+	overflow: hidden;
 }
 #searchDropdown {
 	position:absolute;
