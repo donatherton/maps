@@ -39,7 +39,7 @@ L.Control.PlotTrack = L.Control.extend({
         const infoWindow = L.control.infoWindow({ position: 'topright' }).addTo(map);
 
         // Disable these buttons so they don't confuse things
-        document.getElementById('ors-router').disabled = true;
+        // document.getElementById('ors-router').disabled = true;
         document.getElementById('plotter').disabled = true;
 
         const dlBtn = L.DomUtil.create('button', 'button', divInfo);
@@ -105,7 +105,7 @@ L.Control.PlotTrack = L.Control.extend({
             .removeLayer(polyline)
             .removeLayer(markerGroup);
           document.getElementById('plotter').disabled = false;
-          document.getElementById('ors-router').disabled = false;
+          // document.getElementById('ors-router').disabled = false;
 
           // polyline = L.polyline([], { weight: 2 }).addTo(map);
           // markerGroup = L.layerGroup().addTo(map);

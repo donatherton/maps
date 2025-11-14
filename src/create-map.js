@@ -32,6 +32,11 @@ export default () => {
     { id: 'streets',
       attribution: '<a href="https://mapbox.com/about/maps" class="mapbox-wordmark" target="_blank">Mapbox</a> &copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> <strong><a href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a></strong>',
       maxZoom: 21 });
+  const os = L.tileLayer('https://{s}.os.openstreetmap.org/layer/gb_os_om_local_2020_04/{z}/{x}/{y}.png', {
+      attribution: 'Contains OS data &copy; Crown copyright and database right 2020',
+      maxZoom: 18,
+  });
+
 
   const baseMaps = {
     Openstreetmap: osm,
@@ -39,7 +44,8 @@ export default () => {
     Cycle: cycle,
     Transport: transport,
     Topographic: topo,
-    Google: google
+    Google: google,
+    OS: os
   };
   const overLayers = {
     Openseamap: sea,

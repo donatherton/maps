@@ -25,17 +25,17 @@ L.Control.PlotRoute = L.Control.extend({
       L.DomEvent.on(button, 'click', () => {
         let route;
         let coords;
-        let latlng;
-        const wpts = []; // declare array of waypoints
+        //let latlng;
+        const wpts = [];
         let polyline; // red centre
         let polyline2; // white border
         let polyline3; // black edge
         const geoLabel = [];
-        let thisMarker;
+        let thisMarker = null;
         let divInfo;
 
         // Disable these buttons to stop confusing things
-        document.getElementById('plotter').setAttribute('disabled', 'disabled');
+        // document.getElementById('plotter').setAttribute('disabled', 'disabled');
         document.getElementById('ors-router').setAttribute('disabled', 'disabled');
 
         L.Control.InfoWindow = L.Control.extend({
@@ -65,7 +65,7 @@ L.Control.PlotRoute = L.Control.extend({
         const buttonDiv = L.DomUtil.create('div', 'info-window-inner', divInfo);
         buttonDiv.style.overflow = 'visible';
         
-        var geoInfo = L.DomUtil.create('div','info-window-inner input-elems', divInfo);
+        const geoInfo = L.DomUtil.create('div','info-window-inner input-elems', divInfo);
         geoInfo.id = 'geo-info';
 
         const routeInfo = L.DomUtil.create('div', 'info-window-inner', divInfo);
@@ -88,7 +88,7 @@ L.Control.PlotRoute = L.Control.extend({
             .removeControl(infoWindow)
             .removeLayer(layerGroup)
             .off('contextmenu', popup)
-          document.getElementById('plotter').disabled = false;
+          // document.getElementById('plotter').disabled = false;
           document.getElementById('ors-router').disabled = false;
         });
 
@@ -102,37 +102,30 @@ L.Control.PlotRoute = L.Control.extend({
           iconUrl: 'images/marker-end-icon-2x.png',
           iconAnchor: [11, 26],
         });
-        const smallIcon = L.icon({
+        const viaIcon = L.icon({
           iconUrl: 'images/marker-via-icon-2x.png',
           iconAnchor: [11, 26],
           popupAnchor: [0, -5],
         });
 
-        function geoDataRequest(e) {
-          fetch(`https://nominatim.openstreetmap.org/?addressdetails=1&q=${e.latlng.lat},${e.latlng.lng}&format=json&limit=1`)
-          .then(response => response.json())
-          .then(geoLabel => {
-            L.popup()
-              .setContent(`<a href="https://duckduckgo.com/?q=${geoLabel[0].display_name}" target="_blank">${geoLabel[0].display_name}</a>`)
-              .setLatLng([geoLabel[0].lat, geoLabel[0].lon])
-              .openOn(map);
-          })
-        }
-
-        function geoRequest(coord, wp, whatToDo) {
+        function getGeoData(coord, wpt, whatToDo) {
           fetch(`https://nominatim.openstreetmap.org/reverse?lat=${coord.lat}&lon=${coord.lng}&addressdetails=1&format=json`)
             .then(response => response.json())
             .then(result => {
               switch (whatToDo) {
-                case 'change': geoLabel[wp] = result.address.postcode || `${result.lat}, ${result.lon}`; break;
-                case 'ins': geoLabel.splice(wp, 0, result.address.postcode || `${result.lat}, ${result.lon}`); break;
-                case 'del': geoLabel.splice(wp, 1); break;
+                case 'change': geoLabel[wpt] = result.address.postcode || `${result.lat}, ${result.lon}`; break;
+                case 'ins': geoLabel.splice(wpt, 0, result.address.postcode || `${result.lat}, ${result.lon}`); break;
+                case 'del': geoLabel.splice(wpt, 1); break;
               }
               geoInfo.innerHTML = '';
-              geoLabel.forEach((label) => {
-                geoInfo.innerHTML += `<p>${label}</p>`;
+              //   `<input type="text" id="from" value="" placeholder="From..."><br>`;
+               
+              geoLabel.forEach((label, id) => {
+                geoInfo.innerHTML += `<input type="text" id="${id}" value="${label}">`;
               });
-              //if (geoLabel[wp] != undefined) geoInput[wp].value = geoLabel[wp];
+
+              // geoInfo.innerHTML += 
+              //   `<input type="text" id="to" value="" placeholder="To...">`;
             })
             .catch(err => console.log(`Error: ${err}`));
 		    }
@@ -157,7 +150,7 @@ L.Control.PlotRoute = L.Control.extend({
           }
           wpts.splice(j + 1, 0, latlon);
           routeRequest();
-          geoRequest(latlon, j + 1, 'ins');
+          getGeoData(latlon, j + 1, 'ins');
         }
 
         function deletePoint(e) {
@@ -166,58 +159,53 @@ L.Control.PlotRoute = L.Control.extend({
           delBtn.innerHTML = 'Delete point';
           e.target.bindPopup(delPopup).openPopup();
           L.DomEvent.on(delBtn, 'click', () => {
-            latlng = e.target.getLatLng();
+            const latlng = e.target.getLatLng();
             let i;
             for (i = 0; i < wpts.length; i=i+1) {
               if (wpts[i].lat === latlng.lat && wpts[i].lng === latlng.lng) {
                 wpts.splice(i, 1);
                 geoLabel.splice(i, 1);
-//              L.DomUtil.remove(geoInput[i]);
               }
             }
             layerGroup.removeLayer(e.target);
             routeRequest();
-            geoRequest(latlng, i, 'del');
+            getGeoData(latlng, i, 'del');
           });
         }
 
         function onDragStart(e) {
-          latlng = e.target.getLatLng();
-          for (let i = 0; i < wpts.length; i=i+1) {
-            if (wpts[i].lat === latlng.lat && wpts[i].lng === latlng.lng) {
+          const startPoint = e.target.getLatLng();
+          wpts.forEach((wpt, i) => {
+            if (wpt.lat === startPoint.lat && wpt.lng === startPoint.lng) {
               thisMarker = i;
-              return;
-            } else {
-              thisMarker = 'new';
             }
-          }
+          });
+          if (!thisMarker && thisMarker !== 0) thisMarker = 'new';
+          e.target.on('dragend', e => onDragEnd(e, startPoint))
         }
 
-        function onDragEnd(e) {
-          latlng = e.target.getLatLng();
+        function onDragEnd(e, startPoint) {
+          const endPoint = e.target.getLatLng();
           if (thisMarker === 'new') {
-            insertPoint(latlng);
+            insertPoint(endPoint, startPoint);
           } else {
-            wpts[thisMarker] = latlng;
+            wpts[thisMarker] = endPoint;
             routeRequest();
-         geoRequest(latlng, thisMarker, 'change');
+            getGeoData(endPoint, thisMarker, 'change');
+            thisMarker = null;
           }
         }
 
         function popup(e) {
           const buttonText = (wpts.length === 0) ? 'Start here':'Next WPT / End';
           const buttonID = (wpts.length === 0) ? 'start':'end';
-          const icon = (wpts.length === 0) ? startIcon:endIcon;
+          const icon = (wpts.length === 0) ? startIcon : endIcon;
 
           L.popup()
             .setContent(`${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}<br />
-              <button class="button" id="what">What's here?</button><br>
               <button class="button" id="${buttonID}">${buttonText}</button>`)
             .setLatLng(e.latlng)
             .openOn(map);
-          document.getElementById('what').onclick = () => {
-            geoDataRequest(e)
-          };
           document.getElementById(buttonID).onclick = () => {
             wpts.splice(wpts.length, 0, e.latlng);
             map.closePopup();
@@ -226,10 +214,10 @@ L.Control.PlotRoute = L.Control.extend({
               draggable: 'true',
             }).addTo(layerGroup)
               .on('dragstart', onDragStart)
-              .on('dragend', onDragEnd)
+              //.on('dragend', onDragEnd)
               .on('contextmenu', deletePoint);
             routeRequest();
-            geoRequest(e.latlng, wpts.length, 'ins');
+            getGeoData(e.latlng, wpts.length, 'ins');
           }
         };
         map.on('contextmenu', popup);
@@ -243,24 +231,24 @@ L.Control.PlotRoute = L.Control.extend({
         }
 
         function clickPolyline(e) {
-          map.dragging.disable();
+         // map.dragging.disable();
           const newMarker = new L.Marker(e.latlng, {
             draggable: 'true',
-            icon: smallIcon,
+            icon: viaIcon,
           }).addTo(layerGroup)
             .on('dragstart', onDragStart)
-            .on('dragend', onDragEnd)
+            //.on('dragend', onDragEnd)
             .on('contextmenu', deletePoint);
-          const startPoint = newMarker.getLatLng();
-          map.on('mousemove', (e) => {
-            newMarker.setLatLng(e.latlng);
-          });
-          map.on('mouseup', (e) => {
-            map.off('mousemove');
-            map.dragging.enable();
-            map.off('mouseup');
-            insertPoint(e.latlng, startPoint);
-          });
+          //const startPoint = newMarker.getLatLng();
+          // map.on('mousemove', (e) => {
+          //   newMarker.setLatLng(e.latlng);
+          // });
+          //map.on('mouseup', (e) => {
+          //  map.off('mousemove');
+          //  //map.dragging.enable();
+          //  //map.off('mouseup');
+          //  insertPoint(e.latlng, startPoint);
+          //});
         }
 
         function loadRoute(request) {
@@ -324,26 +312,33 @@ L.Control.PlotRoute = L.Control.extend({
             opacity: '.15',
             clickable: 'true',
           }).addTo(layerGroup)
-            .on('mousedown', clickPolyline)
-            .on('mouseup', onDragEnd);
+            .on('contextmenu', clickPolyline)
+            //.on('mouseup', onDragEnd);
           polyline2 = new L.Polyline(coords).setStyle({
             color: 'white',
             weight: '7',
             opacity: '.8',
             clickable: 'true',
           }).addTo(layerGroup)
-            .on('mousedown', clickPolyline)
-            .on('mouseup', onDragEnd);
+            .on('contextmenu', clickPolyline)
+            //.on('mouseup', onDragEnd);
           polyline = new L.Polyline(coords).setStyle({
             color: 'red',
             weight: '2',
             clickable: 'true',
           }).addTo(layerGroup)
-            .on('mousedown', clickPolyline)
-            .on('mouseup', onDragEnd);
+            .on('contextmenu', clickPolyline)
+           // .on('mouseup', onDragEnd);
+
+          stopEventPropagation(polyline);
+          stopEventPropagation(polyline2);
+          stopEventPropagation(polyline3);
 
           map.fitBounds(polyline.getBounds());
           // Add elevation diagram
+          if (document.getElementById('elevation-div')) {
+            L.DomUtil.remove(document.getElementById('elevation-div'));
+          }
           el.addTo(map);
           el.addData(coords, map);
         }
