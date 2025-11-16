@@ -128,7 +128,7 @@ export default () => {
       const geolabel = (result.features);
       for (let i = 0; i < geolabel.length; i++) {
         coords = geolabel[i].geometry.coordinates.reverse();
-        const newMarker = L.marker(coords).addTo(markerGroup);
+        const newMarker = L.marker(coords, {riseOnHover: 'true'}).addTo(markerGroup);
         var popupContent = geolabel[i].properties.label;
         newMarker.bindPopup(`<a href="https://duckduckgo.com/?q=${popupContent}" target="_blank">${popupContent}</a>`);
       }

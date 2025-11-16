@@ -10,7 +10,7 @@ L.Control.PlotRoute = L.Control.extend({
       position: 'topleft',
     },
     onAdd(map) {
-      let el = elevation();
+      let elevationDiagram = elevation();
       
       const button = L.DomUtil.create('button', 'leaflet-bar leaflet-control leaflet-control-custom ors-routing button');
       button.title = 'Get route with OpenRouteService';
@@ -25,13 +25,11 @@ L.Control.PlotRoute = L.Control.extend({
       L.DomEvent.on(button, 'click', () => {
         let route;
         let coords;
-        //let latlng;
         const wpts = [];
         let polyline; // red centre
         let polyline2; // white border
         let polyline3; // black edge
         const geoLabel = [];
-        let thisMarker = null;
         let divInfo;
 
         // Disable these buttons to stop confusing things
@@ -83,7 +81,7 @@ L.Control.PlotRoute = L.Control.extend({
         const reset = L.DomUtil.create('button', 'button', buttonDiv);
         reset.innerHTML = 'Reset';
         L.DomEvent.on(reset, 'click', () => {
-          if (el) el.remove();
+          if (elevationDiagram) elevationDiagram.remove();
           map
             .removeControl(infoWindow)
             .removeLayer(layerGroup)
@@ -108,7 +106,18 @@ L.Control.PlotRoute = L.Control.extend({
           popupAnchor: [0, -5],
         });
 
-        function getGeoData(coord, wpt, whatToDo) {
+        function getPointGeoData(e) {
+          fetch(`https://nominatim.openstreetmap.org/?addressdetails=1&q=${e.latlng.lat},${e.latlng.lng}&format=json`)
+            .then(response => response.json())
+            .then(geoLabel => {
+              L.popup()
+                .setContent(`<a href="https://duckduckgo.com/?q=${geoLabel[0].display_name}" target="_blank">${geoLabel[0].display_name}</a>`)
+                .setLatLng([geoLabel[0].lat, geoLabel[0].lon])
+                .openOn(map);
+            })
+        }
+
+        function getPointAddress(coord, wpt, whatToDo) {
           fetch(`https://nominatim.openstreetmap.org/reverse?lat=${coord.lat}&lon=${coord.lng}&addressdetails=1&format=json`)
             .then(response => response.json())
             .then(result => {
@@ -118,11 +127,15 @@ L.Control.PlotRoute = L.Control.extend({
                 case 'del': geoLabel.splice(wpt, 1); break;
               }
               geoInfo.innerHTML = '';
+              geoLabel.forEach((label) => {
+                geoInfo.innerHTML += `<p>${label}</p>`;
+              });
+
               //   `<input type="text" id="from" value="" placeholder="From..."><br>`;
                
-              geoLabel.forEach((label, id) => {
-                geoInfo.innerHTML += `<input type="text" id="${id}" value="${label}">`;
-              });
+              // geoLabel.forEach((label, id) => {
+               //  geoInfo.innerHTML += `<input type="text" id="${id}" value="${label}">`;
+              // });
 
               // geoInfo.innerHTML += 
               //   `<input type="text" id="to" value="" placeholder="To...">`;
@@ -149,8 +162,8 @@ L.Control.PlotRoute = L.Control.extend({
             j = j - 1;
           }
           wpts.splice(j + 1, 0, latlon);
-          routeRequest();
-          getGeoData(latlon, j + 1, 'ins');
+          // routeApiRequest();
+          getPointAddress(latlon, j + 1, 'ins');
         }
 
         function deletePoint(e) {
@@ -168,12 +181,13 @@ L.Control.PlotRoute = L.Control.extend({
               }
             }
             layerGroup.removeLayer(e.target);
-            routeRequest();
-            getGeoData(latlng, i, 'del');
+            routeApiRequest();
+            getPointAddress(latlng, i, 'del');
           });
         }
 
         function onDragStart(e) {
+          let thisMarker = null;
           const startPoint = e.target.getLatLng();
           wpts.forEach((wpt, i) => {
             if (wpt.lat === startPoint.lat && wpt.lng === startPoint.lng) {
@@ -181,19 +195,21 @@ L.Control.PlotRoute = L.Control.extend({
             }
           });
           if (!thisMarker && thisMarker !== 0) thisMarker = 'new';
-          e.target.on('dragend', e => onDragEnd(e, startPoint))
+          e.target.on('dragend', e => {
+            onDragEnd(e, startPoint, thisMarker);
+            e.target.off('dragend');
+          });
         }
 
-        function onDragEnd(e, startPoint) {
+        function onDragEnd(e, startPoint, thisMarker) {
           const endPoint = e.target.getLatLng();
           if (thisMarker === 'new') {
             insertPoint(endPoint, startPoint);
           } else {
             wpts[thisMarker] = endPoint;
-            routeRequest();
-            getGeoData(endPoint, thisMarker, 'change');
-            thisMarker = null;
+            getPointAddress(endPoint, thisMarker, 'change');
           }
+          routeApiRequest();
         }
 
         function popup(e) {
@@ -202,10 +218,13 @@ L.Control.PlotRoute = L.Control.extend({
           const icon = (wpts.length === 0) ? startIcon : endIcon;
 
           L.popup()
-            .setContent(`${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}<br />
+            .setContent(`${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}
+              <br />
+              <button class="button" id="what">What's here?</button><br>
               <button class="button" id="${buttonID}">${buttonText}</button>`)
             .setLatLng(e.latlng)
             .openOn(map);
+          document.getElementById('what').onclick = () => getPointGeoData(e)
           document.getElementById(buttonID).onclick = () => {
             wpts.splice(wpts.length, 0, e.latlng);
             map.closePopup();
@@ -214,10 +233,9 @@ L.Control.PlotRoute = L.Control.extend({
               draggable: 'true',
             }).addTo(layerGroup)
               .on('dragstart', onDragStart)
-              //.on('dragend', onDragEnd)
               .on('contextmenu', deletePoint);
-            routeRequest();
-            getGeoData(e.latlng, wpts.length, 'ins');
+            routeApiRequest();
+            getPointAddress(e.latlng, wpts.length, 'ins');
           }
         };
         map.on('contextmenu', popup);
@@ -231,24 +249,12 @@ L.Control.PlotRoute = L.Control.extend({
         }
 
         function clickPolyline(e) {
-         // map.dragging.disable();
-          const newMarker = new L.Marker(e.latlng, {
+          L.marker(e.latlng, {
             draggable: 'true',
             icon: viaIcon,
           }).addTo(layerGroup)
             .on('dragstart', onDragStart)
-            //.on('dragend', onDragEnd)
             .on('contextmenu', deletePoint);
-          //const startPoint = newMarker.getLatLng();
-          // map.on('mousemove', (e) => {
-          //   newMarker.setLatLng(e.latlng);
-          // });
-          //map.on('mouseup', (e) => {
-          //  map.off('mousemove');
-          //  //map.dragging.enable();
-          //  //map.off('mouseup');
-          //  insertPoint(e.latlng, startPoint);
-          //});
         }
 
         function loadRoute(request) {
@@ -313,7 +319,6 @@ L.Control.PlotRoute = L.Control.extend({
             clickable: 'true',
           }).addTo(layerGroup)
             .on('contextmenu', clickPolyline)
-            //.on('mouseup', onDragEnd);
           polyline2 = new L.Polyline(coords).setStyle({
             color: 'white',
             weight: '7',
@@ -321,14 +326,12 @@ L.Control.PlotRoute = L.Control.extend({
             clickable: 'true',
           }).addTo(layerGroup)
             .on('contextmenu', clickPolyline)
-            //.on('mouseup', onDragEnd);
           polyline = new L.Polyline(coords).setStyle({
             color: 'red',
             weight: '2',
             clickable: 'true',
           }).addTo(layerGroup)
             .on('contextmenu', clickPolyline)
-           // .on('mouseup', onDragEnd);
 
           stopEventPropagation(polyline);
           stopEventPropagation(polyline2);
@@ -339,11 +342,11 @@ L.Control.PlotRoute = L.Control.extend({
           if (document.getElementById('elevation-div')) {
             L.DomUtil.remove(document.getElementById('elevation-div'));
           }
-          el.addTo(map);
-          el.addData(coords, map);
+          elevationDiagram.addTo(map);
+          elevationDiagram.addData(coords, map);
         }
 
-        function routeRequest() {
+        function routeApiRequest() {
           if (wpts.length > 1) {
             let plot = [];
 
@@ -425,7 +428,7 @@ L.Control.PlotRoute = L.Control.extend({
           } else if (e.target.name === 'pref') {
             preference = e.target.value;
           } 
-          routeRequest();
+          routeApiRequest();
         });
       });
       return button;

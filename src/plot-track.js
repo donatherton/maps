@@ -18,7 +18,7 @@ L.Control.PlotTrack = L.Control.extend({
       let divInfo;
       const smallIcon = L.divIcon({
         className: 'divicon',
-        iconSize: [10, 10], // size of the icon
+        iconSize: [15, 15], // size of the icon
         popupAnchor: [0, -10], // point from which the popup should open relative to the iconAnchor
       });
 
