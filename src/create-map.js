@@ -79,7 +79,6 @@ export default () => {
 
   // Listen for base layer change
   map.on('baselayerchange', function (e) {
-    //layer = e.layer;
     sessionStorage.setItem('layerId', e.layer.options.id);
   });
 
@@ -98,8 +97,8 @@ export default () => {
   loadGPX().addTo(map);
   fullScreen().addTo(map);
   prefs().addTo(map);
-
-  function getGeoData(e) {
+  // Popup for geo data
+  map.on('contextmenu', e => {
     const infoPopup = L.popup();
     infoPopup
       .setLatLng(e.latlng)
@@ -108,9 +107,8 @@ export default () => {
     document.getElementById('geo').onclick = () => {
       geoDataRequest(e);
       map.closePopup(infoPopup);
-    };
-  }
-  map.on('contextmenu', getGeoData);
+    }
+  });
 
   let markerGroup;
 
@@ -126,12 +124,12 @@ export default () => {
       let coords = [];
       markerGroup = L.layerGroup().addTo(map);
       const geolabel = (result.features);
-      for (let i = 0; i < geolabel.length; i++) {
-        coords = geolabel[i].geometry.coordinates.reverse();
+      geolabel.forEach(label => {
+        coords = label.geometry.coordinates.reverse();
         const newMarker = L.marker(coords, {riseOnHover: 'true'}).addTo(markerGroup);
-        var popupContent = geolabel[i].properties.label;
+        var popupContent = label.properties.label;
         newMarker.bindPopup(`<a href="https://duckduckgo.com/?q=${popupContent}" target="_blank">${popupContent}</a>`);
-      }
-    })
+      });
+    });
   }
 }

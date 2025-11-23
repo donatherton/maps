@@ -58,7 +58,7 @@ L.Control.PlotTrack = L.Control.extend({
         let markerGroup = L.layerGroup().addTo(map);
 
         let polyline = L.polyline([], { weight: 2 }).addTo(map);
-        let el;
+        let elevationDiagram;
 
         L.DomEvent.on(elev, 'click', async () => {
           const { default: elevation } = (await import('./elevation.js'));
@@ -91,37 +91,31 @@ L.Control.PlotTrack = L.Control.extend({
                 if (document.getElementById('elevation-div')) {
                   L.DomUtil.remove(document.getElementById('elevation-div'));
                 }
-                el = elevation();
-                el.addTo(map);
-                el.addData(wpts, map);
+                elevationDiagram = elevation();
+                elevationDiagram.addTo(map);
+                elevationDiagram.addData(wpts, map);
               } else alert('Error: bad data returned');
           })
         })
 
         L.DomEvent.on(reset, 'click', () => {
-          if (el) el.remove();
+          if (elevationDiagram) elevationDiagram.remove();
           map
             .removeControl(infoWindow)
             .removeLayer(polyline)
             .removeLayer(markerGroup);
           document.getElementById('plotter').disabled = false;
-          // document.getElementById('ors-router').disabled = false;
-
-          // polyline = L.polyline([], { weight: 2 }).addTo(map);
-          // markerGroup = L.layerGroup().addTo(map);
-          // wpts = [];
-          // distanceDiv.innerHTML = '';
         });
 
         function getBearing(p1, p2) {
-          const lat1 = p1.lat / 180 * Math.PI;
-          const lat2 = p2.lat / 180 * Math.PI;
-          const lng1 = p1.lng / 180 * Math.PI;
-          const lng2 = p2.lng / 180 * Math.PI;
-          const y = Math.sin(lng2-lng1) * Math.cos(lat2);
-          const x = Math.cos(lat1)*Math.sin(lat2) - Math.sin(lat1)*Math.cos(lat2)*Math.cos(lng2-lng1);
-          const bearing = (Math.atan2(y, x) * 180 / Math.PI + 180).toFixed(0);
-          return (bearing % 360);
+          const toRadians = (degrees) => degrees * (Math.PI / 180);
+          const lat1 = toRadians(p2.lat);
+          const lat2 = toRadians(p1.lat);
+          const lng1 = toRadians(p2.lng);
+          const lng2 = toRadians(p1.lng);
+          const y = Math.sin(lng2 - lng1) * Math.cos(lat2);
+          const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lng2 - lng1);
+          return ((Math.atan2(y, x) * 180 / Math.PI) % 360).toFixed(0);
         }
 
         function getDistance() {
