@@ -115,7 +115,8 @@ L.Control.PlotTrack = L.Control.extend({
           const lng2 = toRadians(p1.lng);
           const y = Math.sin(lng2 - lng1) * Math.cos(lat2);
           const x = Math.cos(lat1) * Math.sin(lat2) - Math.sin(lat1) * Math.cos(lat2) * Math.cos(lng2 - lng1);
-          return ((Math.atan2(y, x) * 180 / Math.PI) % 360).toFixed(0);
+          const b = (Math.atan2(y, x) * 180 / Math.PI);
+          return (b < 0 ? b + 360 : b).toFixed(0);
         }
 
         function getDistance() {
