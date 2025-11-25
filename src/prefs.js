@@ -1,6 +1,6 @@
-import * as L from './leaflet-src.esm.js';
+import { Control, DomUtil, DomEvent } from './leaflet-src.esm.js';
 
-L.Control.Prefs = L.Control.extend({
+Control.Prefs = Control.extend({
   options: {
     position: 'topright',
   },
@@ -8,7 +8,7 @@ L.Control.Prefs = L.Control.extend({
 
   // },
   onAdd(map) {
-    const button = L.DomUtil.create('div',  'leaflet-bar leaflet-control leaflet-control-custom button');
+    const button = DomUtil.create('div',  'leaflet-bar leaflet-control leaflet-control-custom button');
     button.id = 'prefs-button';
     button.innerHTML = '<span style="font-size:10px; font-weight:bold; margin: 2px">Prefs</span>';
     button.title = 'Set preferences';
@@ -16,16 +16,16 @@ L.Control.Prefs = L.Control.extend({
     // button.style.minHeight = '30px';
 
     function stopEventPropagation(elem) {
-      L.DomEvent.on(elem, 'click contextmenu mousedown mousewheel dblclick touchmove', L.DomEvent.stopPropagation);
+      DomEvent.on(elem, 'click contextmenu mousedown mousewheel dblclick touchmove', DomEvent.stopPropagation);
     }
 
     let prefsWindow;
 
     stopEventPropagation(button);
 
-    L.DomEvent.on(button, 'click', () => {
+    DomEvent.on(button, 'click', () => {
       if (!prefsWindow) {
-        prefsWindow = L.DomUtil.create('div', '', button);
+        prefsWindow = DomUtil.create('div', '', button);
         prefsWindow.id = 'prefsWindow';
         prefsWindow.style.width = '200px';
         prefsWindow.style.height = 'auto';
@@ -57,10 +57,10 @@ L.Control.Prefs = L.Control.extend({
           </form>
           <button id="close">Close</button>`;
 
-        L.DomEvent.on(map, 'click', () => {
+        DomEvent.on(map, 'click', () => {
           closePrefs();
         });
-        L.DomEvent.on(prefsWindow, 'click', e => {
+        DomEvent.on(prefsWindow, 'click', e => {
           if (e.target.id === 'close') {
             closePrefs();
           } else if (e.target.id === 'userDefaultLocation' && e.target.checked === true) {
@@ -75,7 +75,7 @@ L.Control.Prefs = L.Control.extend({
 
         function closePrefs() {
           if (prefsWindow) {
-            L.DomUtil.remove(prefsWindow);
+            DomUtil.remove(prefsWindow);
             prefsWindow = null;
           }
         }
@@ -86,6 +86,6 @@ L.Control.Prefs = L.Control.extend({
 });
 
 export default (options) => {
-  return new L.Control.Prefs(options);
+  return new Control.Prefs(options);
 };
 

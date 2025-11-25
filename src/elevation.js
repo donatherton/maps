@@ -1,6 +1,6 @@
-import * as L from './leaflet-src.esm.js';
+import { Control, DomEvent, DomUtil, Popup} from './leaflet-src.esm.js';
 
-L.Control.Elevation = L.Control.extend({
+Control.Elevation = Control.extend({
   options: {
     position: 'bottomright',
   },
@@ -8,17 +8,17 @@ L.Control.Elevation = L.Control.extend({
 
   // },
   onAdd(map) {
-    const container = L.DomUtil.create('div', 'elev-window');
+    const container = DomUtil.create('div', 'elev-window');
     container.id = 'elevation-div';
 
-    const closeButton = L.DomUtil.create('button', 'button', container);
+    const closeButton = DomUtil.create('button', 'button', container);
     closeButton.innerHTML = 'Hide >';
     closeButton.style.position = 'relative';
     closeButton.style.float = 'right';
     closeButton.style.background = 'rgba(156, 194, 34, 0.8)';
     closeButton.style.zIndex = '2';
 
-    L.DomEvent.on(closeButton, 'click', () => {
+    DomEvent.on(closeButton, 'click', () => {
       if (container.style.left === '100%') {
         container.style.left = '0%';
         closeButton.innerHTML = 'Hide >';
@@ -27,19 +27,19 @@ L.Control.Elevation = L.Control.extend({
       } else {
         container.style.left = '100%';
         closeButton.innerHTML = '< Open';
-        closeButton.style.left = '-60px';
+        closeButton.style.left = '-110px';
         closeButton.style.float = 'left';
       }
     });
 
-    L.DomEvent.on(container, 'click contextmenu mousedown mousewheel dblclick touchmove', L.DomEvent.stopPropagation);
+    DomEvent.on(container, 'click contextmenu mousedown mousewheel dblclick touchmove', DomEvent.stopPropagation);
 
     return container;
   },
 
   addData(coords, map) { // map needs to be explicitly sent as it loses scope here
     const pt = [];
-    const spotMarker = L.popup({ closeButton: false });
+    const spotMarker = new Popup({ closeButton: false });
 
     let heightUnitFactor = 1;
     let distUnitFactor = 1;
@@ -175,5 +175,5 @@ L.Control.Elevation = L.Control.extend({
 });
 
 export default (options) => {
-  return new L.Control.Elevation(options);
+  return new Control.Elevation(options);
 };

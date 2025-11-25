@@ -1,34 +1,34 @@
-import * as L from './leaflet-src.esm.js';
+import { Control, DomUtil, DomEvent, DivIcon, LayerGroup, Polyline, Marker } from './leaflet-src.esm.js';
 
-L.Control.LoadGPX = L.Control.extend({
+Control.LoadGPX = Control.extend({
       options: {
       position: 'topleft',
     },
 
     onAdd(map) {
-      const button = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom load-gpx button');
+      const button = DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom load-gpx button');
       button.title = 'Load a GPX file';
 
-      L.DomEvent.on(button, 'click contextmenu mousedown mousewheel dblclick', L.DomEvent.stopPropagation);
+      DomEvent.on(button, 'click contextmenu mousedown mousewheel dblclick', DomEvent.stopPropagation);
 
       // Create an invisible file input
-      const fileInput = L.DomUtil.create('input', '', button);
+      const fileInput = DomUtil.create('input', '', button);
       fileInput.type = 'file';
       fileInput.accept = '.gpx';
       fileInput.style.display = 'none';
 
       function loadGPX(gpxFile) {
-        L.Control.ResetWindow = L.Control.extend({
+        Control.ResetWindow = Control.extend({
           onAdd(map) {
-            const resetButton = L.DomUtil.create('button', 'button');
+            const resetButton = DomUtil.create('button', 'button');
             resetButton.id = 'reset';
             resetButton.style.width = 'auto';
             resetButton.style.height = '30px';
             resetButton.innerText = 'Reset';
 
-            L.DomEvent.on(resetButton, 'click contextmenu mousedown mousewheel dblclick touchmove', L.DomEvent.stopPropagation);
+            DomEvent.on(resetButton, 'click contextmenu mousedown mousewheel dblclick touchmove', DomEvent.stopPropagation);
 
-            L.DomEvent.on(resetButton, 'click', () => {
+            DomEvent.on(resetButton, 'click', () => {
             if (el) el.remove();
             map
               .removeControl(resetButton)
@@ -39,10 +39,10 @@ L.Control.LoadGPX = L.Control.extend({
             return resetButton;
           },
         });
-        L.control.resetWindow = (options) => {
-          return new L.Control.ResetWindow(options);
+        const resetWindow = (options) => {
+          return new Control.ResetWindow(options);
         };
-        L.control.resetWindow({ position: 'topright' }).addTo(map);
+        resetWindow({ position: 'topright' }).addTo(map);
 
         let alt = null;
         const coords = [];
@@ -52,12 +52,12 @@ L.Control.LoadGPX = L.Control.extend({
         const factor = unit === 'km' ? 1.609344 : 1;
         let el;
 
-        const startIcon = new L.DivIcon({
+        const startIcon = new DivIcon({
           className: 'starticon',
           iconSize: [15, 15],
           popupAnchor: [2, -6], // point from which the popup should open relative to the iconAnc
         });
-        const endIcon = new L.DivIcon({
+        const endIcon = new DivIcon({
           className: 'endicon',
           iconSize: [15, 15],
           popupAnchor: [2, -6], // point from which the popup should open relative to the iconAnc
@@ -96,7 +96,12 @@ L.Control.LoadGPX = L.Control.extend({
           const lat = Number(trkpts[i].getAttribute('lat'));
           const lng = Number(trkpts[i].getAttribute('lon'));
           if (hasAlts) {
-            alt = Number(trkpts[i].getElementsByTagName('ele')[0].innerHTML);
+            try {
+              alt = Number(trkpts[i].getElementsByTagName('ele')[0].innerHTML);
+            }
+            catch(err) {
+              console.log(err);
+            }
           }
           const latlng = { lat, lng, alt };
           coords.push(latlng);
@@ -105,20 +110,20 @@ L.Control.LoadGPX = L.Control.extend({
           }
         }
 
-        const layerGroup = L.layerGroup().addTo(map);
+        const layerGroup = new LayerGroup().addTo(map);
 
         const popupText = `<p>${name}</p><p>${(lngth * factor).toFixed(3)} ${unit}</p>`;
 
-        const polyline = new L.Polyline(coords).setStyle({
+        const polyline = new Polyline(coords).setStyle({
           color: 'red',
         }).addTo(layerGroup).bindPopup(popupText);
 
         map.fitBounds(polyline.getBounds());
 
-        new L.Marker(coords[0], {
+        new Marker(coords[0], {
           icon: startIcon,
         }).addTo(layerGroup).bindPopup(popupText);
-        new L.Marker(coords[coords.length - 1], {
+        new Marker(coords[coords.length - 1], {
           icon: endIcon,
         }).addTo(layerGroup).bindPopup(popupText);
 
@@ -151,5 +156,5 @@ L.Control.LoadGPX = L.Control.extend({
   });
 
 export default (options) => {
-  return new L.Control.LoadGPX(options);
+  return new Control.LoadGPX(options);
 };

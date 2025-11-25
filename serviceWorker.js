@@ -7,6 +7,7 @@ const assets = [
   "./src/create-map.js",
   "./src/elevation.js",
   "./src/fullscreen.js",
+  "./src/geodesic.js",
   "./src/leaflet-src.esm.js",
   "./src/load-gpx.js",
   "./src/location.js",

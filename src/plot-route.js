@@ -1,28 +1,28 @@
-import * as L from './leaflet-src.esm.js';
+import { CircleMarker, Control, DomEvent, DomUtil, icon, LayerGroup, Marker, Polyline, Popup } from './leaflet-src.esm.js';
 import { orsAPI, defaultProfile, defaultPreference } from './config.js';
 import elevation from './elevation.js';
 
 let profile = defaultProfile;
 let preference = defaultPreference;
 
-L.Control.PlotRoute = L.Control.extend({
+Control.PlotRoute = Control.extend({
     options: {
       position: 'topleft',
     },
     onAdd(map) {
       let elevationDiagram = elevation();
       
-      const button = L.DomUtil.create('button', 'leaflet-bar leaflet-control leaflet-control-custom ors-routing button');
+      const button = DomUtil.create('button', 'leaflet-bar leaflet-control leaflet-control-custom ors-routing button');
       button.title = 'Get route with OpenRouteService';
       button.id = 'ors-router';
 
       function stopEventPropagation(elem) {
-        L.DomEvent.on(elem, 'click contextmenu mousedown mouseup mousewheel dblclick touchmove', L.DomEvent.stopPropagation);
+        DomEvent.on(elem, 'click contextmenu mousedown mouseup mousewheel dblclick touchmove', DomEvent.stopPropagation);
       }
 
       stopEventPropagation(button);
 
-      L.DomEvent.on(button, 'click', () => {
+      DomEvent.on(button, 'click', () => {
         let route;
         let coords;
         const wpts = [];
@@ -36,13 +36,13 @@ L.Control.PlotRoute = L.Control.extend({
         // document.getElementById('plotter').setAttribute('disabled', 'disabled');
         document.getElementById('ors-router').setAttribute('disabled', 'disabled');
 
-        L.Control.InfoWindow = L.Control.extend({
+        Control.InfoWindow = Control.extend({
           options: {
           position: 'topright',
           },
 
           onAdd(map) {
-            divInfo = L.DomUtil.create('div', 'info-window');
+            divInfo = DomUtil.create('div', 'info-window');
             divInfo.id = 'div-info';
             divInfo.style.overflow = 'visible';
             divInfo.style.width = '80vw';
@@ -53,54 +53,54 @@ L.Control.PlotRoute = L.Control.extend({
             return divInfo;
           },
         });
-        L.control.infoWindow = (options) => {
-          return new L.Control.InfoWindow(options);
+        function routeInfoWindow(options) {
+          return new Control.InfoWindow(options);
         };
-        const infoWindow = L.control.infoWindow({ position: 'topright' }).addTo(map);
+        const infoWindow = routeInfoWindow({ position: 'topright' }).addTo(map);
 
-        const profileSelect = L.DomUtil.create('div', 'profileSelect', divInfo);
+        const profileSelect = DomUtil.create('div', 'profileSelect', divInfo);
 
-        const buttonDiv = L.DomUtil.create('div', 'info-window-inner', divInfo);
+        const buttonDiv = DomUtil.create('div', 'info-window-inner', divInfo);
         buttonDiv.style.overflow = 'visible';
         
-        const geoInfo = L.DomUtil.create('div','info-window-inner input-elems', divInfo);
+        const geoInfo = DomUtil.create('div','info-window-inner input-elems', divInfo);
         geoInfo.id = 'geo-info';
 
-        const routeInfo = L.DomUtil.create('div', 'info-window-inner', divInfo);
+        const routeInfo = DomUtil.create('div', 'info-window-inner', divInfo);
         routeInfo.id = 'routeInfo';
 
-        const closeButton = L.DomUtil.create('button', 'button', buttonDiv);
+        const closeButton = DomUtil.create('button', 'button', buttonDiv);
         closeButton.innerHTML = 'Hide >';
         closeButton.style.position = 'relative';
         closeButton.style.float = 'right';
         closeButton.style.left = '-10px';
 
-        const dlButton = L.DomUtil.create('button', 'button', buttonDiv);
-        dlButton.innerHTML = 'Save as GPX';
+        const dlButton = DomUtil.create('button', 'button', buttonDiv);
+        dlButton.innerHTML = 'Save GPX';
 
-        const reset = L.DomUtil.create('button', 'button', buttonDiv);
+        const reset = DomUtil.create('button', 'button', buttonDiv);
         reset.innerHTML = 'Reset';
-        L.DomEvent.on(reset, 'click', () => {
+        DomEvent.on(reset, 'click', () => {
           if (elevationDiagram) elevationDiagram.remove();
           map
             .removeControl(infoWindow)
             .removeLayer(layerGroup)
-            .off('contextmenu', popup)
+            .off('contextmenu', infoPopup)
           // document.getElementById('plotter').disabled = false;
           document.getElementById('ors-router').disabled = false;
         });
 
-        let layerGroup = L.layerGroup().addTo(map);
+        let layerGroup = new LayerGroup().addTo(map);
 
-        const startIcon = L.icon({
+        const startIcon = icon({
           iconUrl: 'images/marker-start-icon-2x.png',
           iconAnchor: [11, 26],
         });
-        const endIcon = L.icon({
+        const endIcon = icon({
           iconUrl: 'images/marker-end-icon-2x.png',
           iconAnchor: [11, 26],
         });
-        const viaIcon = L.icon({
+        const viaIcon = icon({
           iconUrl: 'images/marker-via-icon-2x.png',
           iconAnchor: [11, 26],
           popupAnchor: [0, -5],
@@ -110,7 +110,7 @@ L.Control.PlotRoute = L.Control.extend({
           fetch(`https://nominatim.openstreetmap.org/?addressdetails=1&q=${e.latlng.lat},${e.latlng.lng}&format=json`)
             .then(response => response.json())
             .then(geoLabel => {
-              L.popup()
+              new Popup()
                 .setContent(`<a href="https://duckduckgo.com/?q=${geoLabel[0].display_name}" target="_blank">${geoLabel[0].display_name}</a>`)
                 .setLatLng([geoLabel[0].lat, geoLabel[0].lon])
                 .openOn(map);
@@ -167,11 +167,11 @@ L.Control.PlotRoute = L.Control.extend({
         }
 
         function deletePoint(e) {
-          const delPopup = L.DomUtil.create('div');
-          const delBtn = L.DomUtil.create('button', 'button', delPopup);
+          const delPopup = DomUtil.create('div');
+          const delBtn = DomUtil.create('button', 'button', delPopup);
           delBtn.innerHTML = 'Delete point';
           e.target.bindPopup(delPopup).openPopup();
-          L.DomEvent.on(delBtn, 'click', () => {
+          DomEvent.on(delBtn, 'click', () => {
             const latlng = e.target.getLatLng();
             let i;
             for (i = 0; i < wpts.length; i=i+1) {
@@ -212,12 +212,12 @@ L.Control.PlotRoute = L.Control.extend({
           routeApiRequest();
         }
 
-        function popup(e) {
+        function infoPopup(e) {
           const buttonText = (wpts.length === 0) ? 'Start here':'Next WPT / End';
           const buttonID = (wpts.length === 0) ? 'start':'end';
           const icon = (wpts.length === 0) ? startIcon : endIcon;
 
-          L.popup()
+          new Popup()
             .setContent(`${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}
               <br />
               <button class="button" id="what">What's here?</button><br>
@@ -228,7 +228,7 @@ L.Control.PlotRoute = L.Control.extend({
           document.getElementById(buttonID).onclick = () => {
             wpts.splice(wpts.length, 0, e.latlng);
             map.closePopup();
-            new L.Marker(e.latlng, {
+            new Marker(e.latlng, {
               icon: icon,
               draggable: 'true',
             }).addTo(layerGroup)
@@ -238,7 +238,7 @@ L.Control.PlotRoute = L.Control.extend({
             getPointAddress(e.latlng, wpts.length, 'ins');
           }
         };
-        map.on('contextmenu', popup);
+        map.on('contextmenu', infoPopup);
 
         function decodePolyline(geometry) {
           const latlngs = [];
@@ -249,7 +249,7 @@ L.Control.PlotRoute = L.Control.extend({
         }
 
         function clickPolyline(e) {
-          L.marker(e.latlng, {
+          new Marker(e.latlng, {
             draggable: 'true',
             icon: viaIcon,
           }).addTo(layerGroup)
@@ -267,17 +267,17 @@ L.Control.PlotRoute = L.Control.extend({
             let waypoint;
             let waypointLatlng;
             let spotMarker;
-            L.DomEvent.addListener(p, 'mouseover', () => {
+            DomEvent.addListener(p, 'mouseover', () => {
               waypoint = wpt.way_points[0];
               waypointLatlng = coord[waypoint];
-              spotMarker = new L.CircleMarker(waypointLatlng).addTo(layerGroup);
+              spotMarker = new CircleMarker(waypointLatlng).addTo(layerGroup);
             });
-            L.DomEvent.addListener(p, 'mouseout', () => {
+            DomEvent.addListener(p, 'mouseout', () => {
               if (spotMarker) spotMarker.remove();
             });
-            L.DomEvent.addListener(p, 'click', (e) => {
+            DomEvent.addListener(p, 'click', (e) => {
               map.setView(waypointLatlng, 17);
-              L.DomEvent.stopPropagation(e);
+              DomEvent.stopPropagation(e);
             });
           }
 
@@ -297,7 +297,7 @@ L.Control.PlotRoute = L.Control.extend({
               let stepDistance = step.distance;
               if (unit === 'miles') stepDistance = `${(stepDistance / 1609.34).toFixed(2)} miles`;
               else stepDistance += 'm';
-              p = L.DomUtil.create('p', 'route-info', routeInfo);
+              p = DomUtil.create('p', 'route-info', routeInfo);
               p.innerHTML = `- ${step.instruction} (${stepDistance})`;
               addRowListener(step, coords);
             }
@@ -312,21 +312,21 @@ L.Control.PlotRoute = L.Control.extend({
             if (polyline3) polyline3.remove();
           }
 
-          polyline3 = new L.Polyline(coords).setStyle({
+          polyline3 = new Polyline(coords).setStyle({
             color: 'black',
             weight: '30',
             opacity: '.15',
             clickable: 'true',
           }).addTo(layerGroup)
             .on('contextmenu', clickPolyline)
-          polyline2 = new L.Polyline(coords).setStyle({
+          polyline2 = new Polyline(coords).setStyle({
             color: 'white',
             weight: '7',
             opacity: '.8',
             clickable: 'true',
           }).addTo(layerGroup)
             .on('contextmenu', clickPolyline)
-          polyline = new L.Polyline(coords).setStyle({
+          polyline = new Polyline(coords).setStyle({
             color: 'red',
             weight: '2',
             clickable: 'true',
@@ -340,7 +340,7 @@ L.Control.PlotRoute = L.Control.extend({
           map.fitBounds(polyline.getBounds());
           // Add elevation diagram
           if (document.getElementById('elevation-div')) {
-            L.DomUtil.remove(document.getElementById('elevation-div'));
+            DomUtil.remove(document.getElementById('elevation-div'));
           }
           elevationDiagram.addTo(map);
           elevationDiagram.addData(coords, map);
@@ -380,12 +380,12 @@ L.Control.PlotRoute = L.Control.extend({
           }
         }
 
-        L.DomEvent.on(dlButton, 'click', () => {
+        DomEvent.on(dlButton, 'click', () => {
           import('./save-gpx.js')
             .then(saveGpx => saveGpx.default(coords));
         });
 
-        L.DomEvent.on(closeButton, 'click', () => {
+        DomEvent.on(closeButton, 'click', () => {
           if (divInfo.style.left === '100%') {
             divInfo.style.left = '0%';
             closeButton.innerHTML = 'Hide >';
@@ -417,12 +417,12 @@ L.Control.PlotRoute = L.Control.extend({
             name="profile" value="${profiles[key]}"${checked}>  <label for="${profiles[key]}">${key}</label>`;
         }
 
-        const pref = L.DomUtil.create('div', '', profileSelect);
+        const pref = DomUtil.create('div', '', profileSelect);
         pref.innerHTML = `<label><input type="radio" id ="shortest" name="pref" value="shortest" checked>
           Shortest</label><label><input type="radio" id ="fastest" name="pref" value="fastest">Fastest</label>
           <label><input type="checkbox" id="other_prefs" name="ferry" checked>Avoid ferries</label>`;
 
-        L.DomEvent.on(profileSelect, 'click', (e) => {
+        DomEvent.on(profileSelect, 'click', (e) => {
           if (e.target.name === 'profile') {
             profile = e.target.value;
           } else if (e.target.name === 'pref') {
@@ -436,5 +436,5 @@ L.Control.PlotRoute = L.Control.extend({
   });
 
 export default (options) => {
-  return new L.Control.PlotRoute(options);
+  return new Control.PlotRoute(options);
 };

@@ -1,15 +1,15 @@
-import * as L from './leaflet-src.esm.js';
+import { Control, DomUtil, DomEvent } from './leaflet-src.esm.js';
 
-L.Control.FullScreen = L.Control.extend({
+Control.FullScreen = Control.extend({
     options: {
       position: 'topleft',
     },
 
     onAdd(map) {
-      const button = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom fullscreen button');
+      const button = DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom fullscreen button');
       button.title = 'Fullscreen';
 
-      L.DomEvent.on(button, 'click contextmenu mousedown mousewheel dblclick', L.DomEvent.stopPropagation);
+      DomEvent.on(button, 'click contextmenu mousedown mousewheel dblclick', DomEvent.stopPropagation);
 
       button.onclick = () => {
         const isInFullScreen = (document.fullscreenElement && document.fullscreenElement)
@@ -43,5 +43,5 @@ L.Control.FullScreen = L.Control.extend({
   });
 
 export default (options) => {
-  return new L.Control.FullScreen(options);
+  return new Control.FullScreen(options);
 };

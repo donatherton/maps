@@ -1,28 +1,28 @@
-import * as L from './leaflet-src.esm.js';
+import { CircleMarker, Control, DomEvent, DomUtil } from './leaflet-src.esm.js';
 
-L.Control.PlaceSearch = L.Control.extend({
+Control.PlaceSearch = Control.extend({
     options: {
       position: 'topleft',
     },
 
     onAdd(map) {
-      const button = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom search-button button');
+      const button = DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom search-button button');
       button.title = 'Search';
 
       function stopEventPropagation(elem) {
-        L.DomEvent.on(elem, 'click contextmenu mousedown mousewheel dblclick', L.DomEvent.stopPropagation);
+        DomEvent.on(elem, 'click contextmenu mousedown mousewheel dblclick', DomEvent.stopPropagation);
       }
 
       stopEventPropagation(button);
 
-      L.DomEvent.on(button, 'click', () => {
-        const searchDiv = L.DomUtil.create('div', 'info-window', button);
+      DomEvent.on(button, 'click', () => {
+        const searchDiv = DomUtil.create('div', 'info-window', button);
         searchDiv.id = 'search-div';
         searchDiv.style.width = '245px';
 
         stopEventPropagation(searchDiv);
 
-        const searchInput = L.DomUtil.create('input', 'info-window-input', searchDiv);
+        const searchInput = DomUtil.create('input', 'info-window-input', searchDiv);
         searchInput.type = 'text';
         searchInput.id = 'search-input';
         searchInput.placeholder = 'Search';
@@ -33,14 +33,14 @@ L.Control.PlaceSearch = L.Control.extend({
 
         function geoSearch(searchStr) {
           function addRowListener(result, line) {
-            L.DomEvent.addListener(line, 'click touchend', (e) => {
+            DomEvent.addListener(line, 'click touchend', (e) => {
               const coords = [result.lat, result.lon];
               map.setView(coords, 16);
-              L.DomUtil.remove(resultsTable);
-              L.DomUtil.remove(searchDiv);
-              L.DomUtil.remove(searchInput);
-              const newMarker = new L.CircleMarker(coords, [0, 0], { radius: 20 }).addTo(map);
-              L.DomEvent.stopPropagation(e);
+              DomUtil.remove(resultsTable);
+              DomUtil.remove(searchDiv);
+              DomUtil.remove(searchInput);
+              const newMarker = new CircleMarker(coords, [0, 0], { radius: 20 }).addTo(map);
+              DomEvent.stopPropagation(e);
 
               function onMarkerClick() {
                 map.removeLayer(newMarker);
@@ -53,10 +53,10 @@ L.Control.PlaceSearch = L.Control.extend({
             .then(response => response.json())
             .then(results=> {
               if (results.length > 0) {
-                resultsTable = L.DomUtil.create('div', 'info-window-inner', button);
+                resultsTable = DomUtil.create('div', 'info-window-inner', button);
                 resultsTable.id = 'searchDropdown1';
                 results.forEach((resultLine, i) => {
-                  resultLine = L.DomUtil.create('p', '', resultsTable);
+                  resultLine = DomUtil.create('p', '', resultsTable);
                   resultLine.innerHTML = results[i].display_name;
                   addRowListener(results[i], resultLine);
                 })
@@ -65,15 +65,15 @@ L.Control.PlaceSearch = L.Control.extend({
         }
 
         map.on('mousedown', () => {
-          if (searchDiv) L.DomUtil.remove(searchDiv);
-          if (searchInput) L.DomUtil.remove(searchInput);
-          if (resultsTable) L.DomUtil.remove(resultsTable);
+          if (searchDiv) DomUtil.remove(searchDiv);
+          if (searchInput) DomUtil.remove(searchInput);
+          if (resultsTable) DomUtil.remove(resultsTable);
         });
 
-        L.DomEvent.addListener(searchInput, 'keyup', (e) => {
-          L.DomEvent.stopPropagation(e);
+        DomEvent.addListener(searchInput, 'keyup', (e) => {
+          DomEvent.stopPropagation(e);
           if (e.keyCode === 13) { 
-            if (resultsTable) L.DomUtil.remove(resultsTable);
+            if (resultsTable) DomUtil.remove(resultsTable);
             geoSearch(searchInput.value);
           }
         });
@@ -83,5 +83,5 @@ L.Control.PlaceSearch = L.Control.extend({
   });
 
 export default (options) => {
-  return new L.Control.PlaceSearch(options);
+  return new Control.PlaceSearch(options);
 };

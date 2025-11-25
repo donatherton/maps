@@ -1,15 +1,15 @@
-import * as L from './leaflet-src.esm.js';
+import  { CircleMarker, Control, DomEvent, DomUtil } from './leaflet-src.esm.js';
 
-L.Control.FindLocation = L.Control.extend({
+Control.FindLocation = Control.extend({
     options: {
       position: 'topleft',
     },
 
     onAdd(map) {
-      const button = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom location-button button');
+      const button = DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom location-button button');
       button.title = 'Get your current location';
       
-      L.DomEvent.on(button, 'click contextmenu mousedown mousewheel dblclick', L.DomEvent.stopPropagation);
+      DomEvent.on(button, 'click contextmenu mousedown mousewheel dblclick', DomEvent.stopPropagation);
 
       let i = true;
       let id;
@@ -19,7 +19,7 @@ L.Control.FindLocation = L.Control.extend({
           if (navigator.geolocation) {
             button.style.backgroundColor = 'red';
             i = false;
-            mark = new L.CircleMarker([0, 0]).addTo(map);
+            mark = new CircleMarker([0, 0]).addTo(map);
             id = navigator.geolocation.watchPosition((position) => {
               const lat = position.coords.latitude;
               const lon = position.coords.longitude;
@@ -47,5 +47,5 @@ L.Control.FindLocation = L.Control.extend({
   });
 
 export default (options) => {
-  return new L.Control.FindLocation(options);
+  return new Control.FindLocation(options);
 };
