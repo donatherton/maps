@@ -12,7 +12,7 @@ export default function saveGpx(coords) {
     "1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation=
     "http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">\n
     <trk>\n<name>gpx-track</name>\n<trkseg>\n${gpxTrack}</trkseg>\n</trk>\n</gpx>`;
-    
+
   const a = document.createElement('a');
     document.body.appendChild(a);
     a.href = URL.createObjectURL(new Blob([gpx], {
@@ -21,4 +21,4 @@ export default function saveGpx(coords) {
     a.download = 'gpx-track.gpx';
     a.click();
     document.body.removeChild(a);
-  }; 
+  }

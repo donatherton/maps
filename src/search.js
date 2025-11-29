@@ -33,7 +33,7 @@ Control.PlaceSearch = Control.extend({
 
         function geoSearch(searchStr) {
           function addRowListener(result, line) {
-            DomEvent.addListener(line, 'click touchend', (e) => {
+            DomEvent.addListener(line, 'click touchend', e => {
               const coords = [result.lat, result.lon];
               map.setView(coords, 16);
               DomUtil.remove(resultsTable);
@@ -45,13 +45,14 @@ Control.PlaceSearch = Control.extend({
               function onMarkerClick() {
                 map.removeLayer(newMarker);
               }
+
               newMarker.on('click touch', onMarkerClick);
             });
           }
 
           fetch(`https://nominatim.openstreetmap.org/?format=json&addressdetails=1&q=${searchStr}&format=json&limit=5`)
             .then(response => response.json())
-            .then(results=> {
+            .then(results => {
               if (results.length > 0) {
                 resultsTable = DomUtil.create('div', 'info-window-inner', button);
                 resultsTable.id = 'searchDropdown1';
@@ -59,9 +60,9 @@ Control.PlaceSearch = Control.extend({
                   resultLine = DomUtil.create('p', '', resultsTable);
                   resultLine.innerHTML = results[i].display_name;
                   addRowListener(results[i], resultLine);
-                })
+                });
               } else searchInput.value = 'No results';
-            })
+            });
         }
 
         map.on('mousedown', () => {
@@ -70,9 +71,9 @@ Control.PlaceSearch = Control.extend({
           if (resultsTable) DomUtil.remove(resultsTable);
         });
 
-        DomEvent.addListener(searchInput, 'keyup', (e) => {
+        DomEvent.addListener(searchInput, 'keyup', e => {
           DomEvent.stopPropagation(e);
-          if (e.keyCode === 13) { 
+          if (e.keyCode === 13) {
             if (resultsTable) DomUtil.remove(resultsTable);
             geoSearch(searchInput.value);
           }
@@ -82,6 +83,4 @@ Control.PlaceSearch = Control.extend({
     },
   });
 
-export default (options) => {
-  return new Control.PlaceSearch(options);
-};
+export default options => new Control.PlaceSearch(options);

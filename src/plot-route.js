@@ -10,7 +10,7 @@ Control.PlotRoute = Control.extend({
       position: 'topleft',
     },
     onAdd(map) {
-      let elevationDiagram = elevation();
+      const elevationDiagram = elevation();
       
       const button = DomUtil.create('button', 'leaflet-bar leaflet-control leaflet-control-custom ors-routing button');
       button.title = 'Get route with OpenRouteService';
@@ -56,6 +56,7 @@ Control.PlotRoute = Control.extend({
         function routeInfoWindow(options) {
           return new Control.InfoWindow(options);
         };
+
         const infoWindow = routeInfoWindow({ position: 'topright' }).addTo(map);
 
         const profileSelect = DomUtil.create('div', 'profileSelect', divInfo);
@@ -86,11 +87,10 @@ Control.PlotRoute = Control.extend({
             .removeControl(infoWindow)
             .removeLayer(layerGroup)
             .off('contextmenu', infoPopup)
-          // document.getElementById('plotter').disabled = false;
           document.getElementById('ors-router').disabled = false;
         });
 
-        let layerGroup = new LayerGroup().addTo(map);
+        const layerGroup = new LayerGroup().addTo(map);
 
         const startIcon = icon({
           iconUrl: 'images/marker-start-icon-2x.png',
@@ -126,8 +126,9 @@ Control.PlotRoute = Control.extend({
                 case 'ins': geoLabel.splice(wpt, 0, result.address.postcode || `${result.lat}, ${result.lon}`); break;
                 case 'del': geoLabel.splice(wpt, 1); break;
               }
+
               geoInfo.innerHTML = '';
-              geoLabel.forEach((label) => {
+              geoLabel.forEach(label => {
                 geoInfo.innerHTML += `<p>${label}</p>`;
               });
 
@@ -141,7 +142,7 @@ Control.PlotRoute = Control.extend({
               //   `<input type="text" id="to" value="" placeholder="To...">`;
             })
             .catch(err => console.log(`Error: ${err}`));
-		    }
+        }
 
         function insertPoint(latlon, startPoint) {
           // Calculate between which waypoints it should go.
@@ -155,12 +156,15 @@ Control.PlotRoute = Control.extend({
               minIndex = i;
               minDist = d;
             }
-            i = i - 1;
+
+            i--;
           }
+
           let j = route.properties.way_points.length - 1;
           while (j >= 0 && route.properties.way_points[j] > minIndex) {
-            j = j - 1;
+            j--;
           }
+
           wpts.splice(j + 1, 0, latlon);
           // routeApiRequest();
           getPointAddress(latlon, j + 1, 'ins');
@@ -174,12 +178,13 @@ Control.PlotRoute = Control.extend({
           DomEvent.on(delBtn, 'click', () => {
             const latlng = e.target.getLatLng();
             let i;
-            for (i = 0; i < wpts.length; i=i+1) {
+            for (i = 0; i < wpts.length; i++) {
               if (wpts[i].lat === latlng.lat && wpts[i].lng === latlng.lng) {
                 wpts.splice(i, 1);
                 geoLabel.splice(i, 1);
               }
             }
+
             layerGroup.removeLayer(e.target);
             routeApiRequest();
             getPointAddress(latlng, i, 'del');
@@ -194,6 +199,7 @@ Control.PlotRoute = Control.extend({
               thisMarker = i;
             }
           });
+
           if (!thisMarker && thisMarker !== 0) thisMarker = 'new';
           e.target.on('dragend', e => {
             onDragEnd(e, startPoint, thisMarker);
@@ -209,6 +215,7 @@ Control.PlotRoute = Control.extend({
             wpts[thisMarker] = endPoint;
             getPointAddress(endPoint, thisMarker, 'change');
           }
+
           routeApiRequest();
         }
 
@@ -245,6 +252,7 @@ Control.PlotRoute = Control.extend({
           for (let i = 0; i < geometry.length; i++) {
             latlngs.push({ 'lat': geometry[i][1], 'lng': geometry[i][0], 'alt': geometry[i][2] });
           }
+
           return latlngs;
         }
 
@@ -275,7 +283,7 @@ Control.PlotRoute = Control.extend({
             DomEvent.addListener(p, 'mouseout', () => {
               if (spotMarker) spotMarker.remove();
             });
-            DomEvent.addListener(p, 'click', (e) => {
+            DomEvent.addListener(p, 'click', e => {
               map.setView(waypointLatlng, 17);
               DomEvent.stopPropagation(e);
             });
@@ -302,12 +310,15 @@ Control.PlotRoute = Control.extend({
               addRowListener(step, coords);
             }
           }
+
           if (polyline) {
             if (polyline) polyline.remove();
           }
+
           if (polyline2) {
             if (polyline2) polyline2.remove();
           }
+
           if (polyline3) {
             if (polyline3) polyline3.remove();
           }
@@ -342,13 +353,14 @@ Control.PlotRoute = Control.extend({
           if (document.getElementById('elevation-div')) {
             DomUtil.remove(document.getElementById('elevation-div'));
           }
+
           elevationDiagram.addTo(map);
           elevationDiagram.addData(coords, map);
         }
 
         function routeApiRequest() {
           if (wpts.length > 1) {
-            let plot = [];
+            const plot = [];
 
             let ferry = document.getElementsByName('ferry');
             if (ferry[0].checked) ferry = ['ferries']
@@ -362,16 +374,16 @@ Control.PlotRoute = Control.extend({
             fetch(url, {
               method: 'POST',
               headers: {
-                'Accept': 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8',
+                Accept: 'application/json, application/geo+json, application/gpx+xml, img/png; charset=utf-8',
                 'Content-Type': 'application/json',
-                'Authorization': orsAPI
+                Authorization: orsAPI
               },
               body: JSON.stringify({
-                'coordinates': plot,
-                'elevation': true,
-                'instructions': true,
-                'preference': preference,
-                'options': {'avoid_features': ferry}
+                coordinates: plot,
+                elevation: true,
+                instructions: true,
+                preference: preference,
+                options: {avoid_features: ferry}
               })
             })
               .then(response => response.json())
@@ -390,12 +402,12 @@ Control.PlotRoute = Control.extend({
             divInfo.style.left = '0%';
             closeButton.innerHTML = 'Hide >';
             closeButton.style.left = '-10px';
-            closeButton.style.float = 'right'
+            closeButton.style.float = 'right';
           } else {
             divInfo.style.left = '100%';
             closeButton.innerHTML = '< Open';
             closeButton.style.left = '-54px';
-            closeButton.style.float = 'left'
+            closeButton.style.float = 'left';
           }
         });
 
@@ -408,11 +420,12 @@ Control.PlotRoute = Control.extend({
         for (const k in values) {
           if (values[k] === profile) {
             checked = 'checked';
-            key = keys[k]
+            key = keys[k];
           } else {
             checked = '';
-            key = keys[k]
+            key = keys[k];
           }
+
           profileSelect.innerHTML += `<input type="radio" id="${profiles[key]}" 
             name="profile" value="${profiles[key]}"${checked}>  <label for="${profiles[key]}">${key}</label>`;
         }
@@ -427,14 +440,14 @@ Control.PlotRoute = Control.extend({
             profile = e.target.value;
           } else if (e.target.name === 'pref') {
             preference = e.target.value;
-          } 
+          }
+
           routeApiRequest();
         });
       });
+
       return button;
     }
   });
 
-export default (options) => {
-  return new Control.PlotRoute(options);
-};
+export default options => new Control.PlotRoute(options);

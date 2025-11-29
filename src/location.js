@@ -20,7 +20,7 @@ Control.FindLocation = Control.extend({
             button.style.backgroundColor = 'red';
             i = false;
             mark = new CircleMarker([0, 0]).addTo(map);
-            id = navigator.geolocation.watchPosition((position) => {
+            id = navigator.geolocation.watchPosition(position => {
               const lat = position.coords.latitude;
               const lon = position.coords.longitude;
               mark.setLatLng([lat, lon]);
@@ -37,15 +37,15 @@ Control.FindLocation = Control.extend({
           if (mark) {
             if (map.hasLayer(mark)) map.removeLayer(mark);
           }
+
           navigator.geolocation.clearWatch(id);
           button.style.backgroundColor = 'white';
           i = true;
         }
       };
+
       return button;
     },
   });
 
-export default (options) => {
-  return new Control.FindLocation(options);
-};
+export default options => new Control.FindLocation(options);

@@ -8,7 +8,7 @@ Control.Prefs = Control.extend({
 
   // },
   onAdd(map) {
-    const button = DomUtil.create('div',  'leaflet-bar leaflet-control leaflet-control-custom button');
+    const button = DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom button');
     button.id = 'prefs-button';
     button.innerHTML = '<span style="font-size:10px; font-weight:bold; margin: 2px">Prefs</span>';
     button.title = 'Set preferences';
@@ -36,8 +36,8 @@ Control.Prefs = Control.extend({
         stopEventPropagation(prefsWindow);
 
         const units = [localStorage.getItem('dist'), localStorage.getItem('height')];
-        if (!units[0]) units[0] = 'km';
-        if (!units[1]) units[1] = 'm';
+        units[0] ||= 'km';
+        units[1] ||= 'm';
 
         let k, miles, metres, ft = '';
         units[0] === 'km' ? k = 'checked' : miles = 'checked';
@@ -66,7 +66,7 @@ Control.Prefs = Control.extend({
           } else if (e.target.id === 'userDefaultLocation' && e.target.checked === true) {
             const centre = map.getCenter();
             let mapLayer = sessionStorage.getItem('layerId');
-            mapLayer ? mapLayer : mapLayer = 'osm';
+            mapLayer ||= 'osm';
             localStorage.setItem('userDefaultLocation', `{"lat": ${centre.lat}, "lng": ${centre.lng}, "zoom": ${map.getZoom()}, "layerId": "${mapLayer}"}`);
           } else if (e.target.name === 'dist' || e.target.name === 'height') {
               localStorage.setItem(e.target.name, e.target.value);
@@ -82,10 +82,8 @@ Control.Prefs = Control.extend({
       }
     })
     return button;
-  }
+  },
 });
 
-export default (options) => {
-  return new Control.Prefs(options);
-};
+export default options => new Control.Prefs(options);
 

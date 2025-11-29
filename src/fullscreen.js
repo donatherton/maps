@@ -38,10 +38,9 @@ Control.FullScreen = Control.extend({
           document.msExitFullscreen();
         }
       };
+
       return button;
-    }
+    },
   });
 
-export default (options) => {
-  return new Control.FullScreen(options);
-};
+export default options => new Control.FullScreen(options);

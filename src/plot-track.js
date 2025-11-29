@@ -1,4 +1,4 @@
-import { Control,  DomUtil, DomEvent, DivIcon, LatLngBounds, LayerGroup, Marker } from './leaflet-src.esm.js';
+import { Control, DomUtil, DomEvent, DivIcon, LatLngBounds, LayerGroup, Marker } from './leaflet-src.esm.js';
 import geodesicPolyline from './geodesic.js';
 
 Control.PlotTrack = Control.extend({
@@ -53,30 +53,31 @@ Control.PlotTrack = Control.extend({
         const distanceDiv = DomUtil.create('span', '', divInfo);
         distanceDiv.style.margin = '20px';
 
-        let wpts = [];
-        let markerGroup = new LayerGroup().addTo(map);
+        const wpts = [];
+        const markerGroup = new LayerGroup().addTo(map);
 
-        let polyline = geodesicPolyline([], {color: 'blue', weight: 2 }).addTo(map);
+        const polyline = geodesicPolyline([], {color: 'blue', weight: 2 }).addTo(map);
         let elevationDiagram;
 
         DomEvent.on(elev, 'click', async () => {
           const { default: elevation } = (await import('./elevation.js'));
           const { orsAPI } = await import('./config.js');
-          let wpt = [];
+          const wpt = [];
           for (let i = 0; i < wpts.length; i++) {
             wpt.push([wpts[i].lng, wpts[i].lat]);
           };
-          await fetch(`https://api.openrouteservice.org/elevation/line`, {
+
+          await fetch('https://api.openrouteservice.org/elevation/line', {
             method: 'POST',
             headers: {
-              'Accept': 'application/json',
+              Accept: 'application/json',
               'Content-Type': 'application/json',
-              'Authorization': orsAPI
+              Authorization: orsAPI
             },
             body: JSON.stringify({
-              'format_in': 'polyline',
-              'format_out': 'polyline',
-              'geometry': wpt
+              format_in: 'polyline',
+              format_out: 'polyline',
+              geometry: wpt
             })
           })
             .then(response => response.json())
@@ -90,6 +91,7 @@ Control.PlotTrack = Control.extend({
                 if (document.getElementById('elevation-div')) {
                   DomUtil.remove(document.getElementById('elevation-div'));
                 }
+
                 elevationDiagram = elevation();
                 elevationDiagram.addTo(map);
                 elevationDiagram.addData(wpts, map);
@@ -107,7 +109,7 @@ Control.PlotTrack = Control.extend({
         });
 
         function getBearing(p1, p2) {
-          const toRadians = (degrees) => degrees * (Math.PI / 180);
+          const toRadians = degrees => degrees * (Math.PI / 180);
           const lat1 = toRadians(p2.lat);
           const lat2 = toRadians(p1.lat);
           const lng1 = toRadians(p2.lng);
@@ -126,14 +128,15 @@ Control.PlotTrack = Control.extend({
             for (i = 1; i < wpts.length; i++) {
               distance += wpts[i].distanceTo(wpts[i - 1]);
             }
+
             if (localStorage.getItem('dist') === 'miles') {
               distance /= 1609.34;
               unit = ' miles';
-              distance = distance.toFixed(3)
-            }
-            else {
+              distance = distance.toFixed(3);
+            } else {
               distance = (distance / 1000).toFixed(3);
             }
+
             const bearing = getBearing(wpts[wpts.length - 1], wpts[wpts.length - 2]);
             distanceDiv.innerHTML = distance + unit + ' ' + bearing + '&deg;';
           }
@@ -154,6 +157,7 @@ Control.PlotTrack = Control.extend({
           if (wpts.length > 1) polyline.setLatLngs(wpts)
           getDistance();
         }
+
         map.on('click', onMapClick);
 
         function onDragStart(e) {
@@ -164,6 +168,7 @@ Control.PlotTrack = Control.extend({
               currentMarker = i;
             }
           }
+
           e.target.on('drag', e => onDrag(e, currentMarker));
         }
 
@@ -203,6 +208,7 @@ Control.PlotTrack = Control.extend({
               wpts.splice(i, 1);
             }
           }
+
           map.removeLayer(e.target);
           polyline.setLatLngs(wpts);
           getDistance();
@@ -216,9 +222,11 @@ Control.PlotTrack = Control.extend({
               if (i === 0) i = 1;
               const bounds = new LatLngBounds(wpts[i], wpts[i - 1]);
               newpoint = bounds.getCenter();
-              wpts.splice(i, 0, newpoint); break;
+              wpts.splice(i, 0, newpoint); 
+              break;
             }
           }
+
           const newMarker = new Marker(newpoint, {
             draggable: 'true',
             icon: smallIcon,
@@ -235,13 +243,12 @@ Control.PlotTrack = Control.extend({
 
         DomEvent.on(dlBtn, 'click', () => {
           import('./save-gpx.js')
-            .then(saveGpx => saveGpx.default(wpts));;
+            .then(saveGpx => saveGpx.default(wpts));
         });
       };
+
       return button;
-    }
+    },
   });
 
-export default (options) => {
-  return new Control.PlotTrack(options);
-};
+export default options => new Control.PlotTrack(options);

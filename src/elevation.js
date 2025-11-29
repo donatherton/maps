@@ -1,4 +1,4 @@
-import { Control, DomEvent, DomUtil, Popup} from './leaflet-src.esm.js';
+import { Control, DomEvent, DomUtil, Popup } from './leaflet-src.esm.js';
 
 Control.Elevation = Control.extend({
   options: {
@@ -37,7 +37,7 @@ Control.Elevation = Control.extend({
     return container;
   },
 
-  addData(coords, map) { // map needs to be explicitly sent as it loses scope here
+  addData(coords, map) { // Map needs to be explicitly sent as it loses scope here
     const pt = [];
     const spotMarker = new Popup({ closeButton: false });
 
@@ -49,6 +49,7 @@ Control.Elevation = Control.extend({
       heightUnitFactor = 3.28084;
       heightUnit = 'ft';
     }
+
     if (localStorage.getItem('dist') === 'miles') {
       distUnitFactor = 0.62137;
       distUnit = 'miles';
@@ -72,13 +73,14 @@ Control.Elevation = Control.extend({
       while (index < pt.length - 1 && pt[index + 1][0] <= dist) {
         index++;
       }
+
       // Add marker on polyline
       const d = (pt[index][0] * distUnitFactor).toFixed(3);
       const h = (pt[index][1] * heightUnitFactor).toFixed(0);
       spotMarker
         .setLatLng([coords[index].lat, coords[index].lng])
         .setContent(`${d} ${distUnit}<br>${h} ${heightUnit}`)
-        .openOn(map);          
+        .openOn(map);
       // Tooltip on chart
       ctx2.clearRect(0, 0, newCanvas.width, newCanvas.height);
       ctx2.beginPath();
@@ -106,6 +108,7 @@ Control.Elevation = Control.extend({
         d = pt[i][index];
         dist.push(d);
       }
+
       return dist;
     }
 
@@ -118,7 +121,7 @@ Control.Elevation = Control.extend({
     }
 
     const canvas = document.createElement('canvas');
-    canvas.id = 'elevation'; 
+    canvas.id = 'elevation';
     canvas.height = 75;
     document.getElementById('elevation-div').appendChild(canvas);
 
@@ -166,14 +169,12 @@ Control.Elevation = Control.extend({
     document.getElementById('elevation-div').appendChild(newCanvas);
     const ctx2 = newCanvas.getContext('2d');
 
-    newCanvas.addEventListener('touchmove', (e) => onmouseover(e.changedTouches[0]));
+    newCanvas.addEventListener('touchmove', e => onmouseover(e.changedTouches[0]));
     newCanvas.addEventListener('mousemove', onmouseover);
 
     newCanvas.addEventListener('mouseout', onmouseout);
     newCanvas.addEventListener('touchend', onmouseout);
-  }
+  },
 });
 
-export default (options) => {
-  return new Control.Elevation(options);
-};
+export default options => new Control.Elevation(options);

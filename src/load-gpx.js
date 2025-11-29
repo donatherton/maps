@@ -39,9 +39,7 @@ Control.LoadGPX = Control.extend({
             return resetButton;
           },
         });
-        const resetWindow = (options) => {
-          return new Control.ResetWindow(options);
-        };
+        const resetWindow = options => new Control.ResetWindow(options);
         resetWindow({ position: 'topright' }).addTo(map);
 
         let alt = null;
@@ -75,6 +73,7 @@ Control.LoadGPX = Control.extend({
           if ((lat1 === lat2) && (lon1 === lon2)) {
             return 0;
           }
+
           const radlat1 = (Math.PI * lat1) / 180;
           const radlat2 = (Math.PI * lat2) / 180;
           const theta = lon1 - lon2;
@@ -83,6 +82,7 @@ Control.LoadGPX = Control.extend({
           if (dist > 1) {
             dist = 1;
           }
+
           dist = Math.acos(dist);
           dist = (dist * 180) / Math.PI;
           dist = dist * 60 * 1.1515;
@@ -103,6 +103,7 @@ Control.LoadGPX = Control.extend({
               console.log(err);
             }
           }
+
           const latlng = { lat, lng, alt };
           coords.push(latlng);
           if (i > 0) {
@@ -130,7 +131,7 @@ Control.LoadGPX = Control.extend({
         // Elevation diagram
         if (hasAlts) {
           import('./elevation.js')
-            .then( elevation => {
+            .then(elevation => {
             el = elevation.default();
             el.addTo(map);
             el.addData(coords, map);
@@ -148,13 +149,13 @@ Control.LoadGPX = Control.extend({
             const gpx = parser.parseFromString(reader.result, 'text/xml');
             loadGPX(gpx);
           };
+
           reader.readAsText(file);
         };
       };
+
       return button;
-    }
+    },
   });
 
-export default (options) => {
-  return new Control.LoadGPX(options);
-};
+export default options => new Control.LoadGPX(options);
