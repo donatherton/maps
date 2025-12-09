@@ -19,7 +19,7 @@ Control.PlotTrack = Control.extend({
       let divInfo;
       const smallIcon = new DivIcon({
         className: 'divicon',
-        iconSize: [15, 15], // size of the icon
+        iconSize: [20, 20], // size of the icon
         popupAnchor: [0, -10], // point from which the popup should open relative to the iconAnchor
       });
 
@@ -36,7 +36,8 @@ Control.PlotTrack = Control.extend({
         });
         function trackInfoWindow(options) {
           return new Control.InfoWindow(options);
-        };
+        }
+
         const infoWindow = trackInfoWindow({ position: 'topright' }).addTo(map);
 
         document.getElementById('plotter').disabled = true;
@@ -120,26 +121,34 @@ Control.PlotTrack = Control.extend({
           return (b < 0 ? b + 360 : b).toFixed(0);
         }
 
-        function getDistance() {
-          if (wpts.length > 1) {
+        function getDistance(currentMarker = wpts.length - 1) {
+          if (currentMarker > 0) {
             let i;
             let unit = 'km';
-            let distance = 0;
+            let totalDistance = 0;
+            let conversionFactor = 1000;
+            const stepDistance = wpts[currentMarker].distanceTo(wpts[currentMarker - 1]);
+
             for (i = 1; i < wpts.length; i++) {
-              distance += wpts[i].distanceTo(wpts[i - 1]);
+              totalDistance += wpts[i].distanceTo(wpts[i - 1]);
             }
 
             if (localStorage.getItem('dist') === 'miles') {
-              distance /= 1609.34;
+              conversionFactor = 1609.34;
               unit = ' miles';
-              distance = distance.toFixed(3);
-            } else {
-              distance = (distance / 1000).toFixed(3);
             }
 
-            const bearing = getBearing(wpts[wpts.length - 1], wpts[wpts.length - 2]);
-            distanceDiv.innerHTML = distance + unit + ' ' + bearing + '&deg;';
+            const stepBearing = getBearing(wpts[currentMarker], wpts[currentMarker - 1]);
+            const totalBearing = getBearing(wpts[wpts.length - 1], wpts[0]);
+
+            updateDistanceDiv(totalDistance, totalBearing, conversionFactor, unit);
+
+            return (stepDistance / conversionFactor).toFixed(3) + unit + '<br>' + stepBearing + '&deg;';
           }
+        }
+
+        function updateDistanceDiv(distance, bearing, conversionFactor, unit) {
+          distanceDiv.innerHTML = (distance / conversionFactor).toFixed(3) + unit + ' ' + bearing + '&deg;';
         }
 
         function onMapClick(e) {
@@ -149,25 +158,42 @@ Control.PlotTrack = Control.extend({
           }).addTo(markerGroup);
           newMarker
             .on('dragstart', onDragStart)
-            .on('click', onDragStart)
+            .on('click', updateTooltip)
             .on('dragend', onDragEnd)
-            .on('contextmenu', insDel);
+            .on('contextmenu', insDel)
+            .on('mouseover', updateTooltip);
           wpts.push(e.latlng);
           polyline.addLatLng(e.latlng);
-          if (wpts.length > 1) polyline.setLatLngs(wpts)
-          getDistance();
+          if (wpts.length > 1) {
+            polyline.setLatLngs(wpts);
+            newMarker.bindTooltip(getDistance()).openTooltip();
+          }
+          //getDistance();
         }
 
         map.on('click', onMapClick);
 
-        function onDragStart(e) {
-          let currentMarker;
-          const latlng = e.target.getLatLng();
+        function getWpt(latlng) {
           for (let i = 0; i < wpts.length; i++) {
             if (wpts[i].lat === latlng.lat && wpts[i].lng === latlng.lng) {
-              currentMarker = i;
+              return i;
             }
           }
+        }
+
+        function updateTooltip(e) {
+          const latlng = e.target.getLatLng();
+          const currentMarker = getWpt(latlng);
+          if (currentMarker > 0) {
+            e.target._tooltip.setContent(getDistance(currentMarker));
+          } else if (e.target._tooltip) {
+            e.target.unbindTooltip();
+          }
+        }
+
+        function onDragStart(e) {
+          const latlng = e.target.getLatLng();
+          const currentMarker = getWpt(latlng);
 
           e.target.on('drag', e => onDrag(e, currentMarker));
         }
@@ -176,68 +202,61 @@ Control.PlotTrack = Control.extend({
           const latlng = e.target.getLatLng();
           wpts.splice(currentMarker, 1, latlng);
           polyline.setLatLngs(wpts);
-          getDistance();
+          updateTooltip(e);
+          //getDistance();
         }
 
         function onDragEnd(e) {
           e.target.off('drag');
         }
 
-        function insDel(e) {
+        function insDel(e) { console.log(e);
           const newPopup = DomUtil.create('div');
           const delBtn = DomUtil.create('button', 'button', newPopup);
           const insBtn = DomUtil.create('button', 'button', newPopup);
-          delBtn.innerHTML = 'Delete point';
-          delBtn.id = 'delbtn';
-          insBtn.id = 'insbtn';
-          insBtn.innerHTML = 'Insert point';
+          delBtn.textContent = 'Delete point';
+          insBtn.textContent = 'Insert point';
+
           e.target.bindPopup(newPopup).openPopup();
 
-          document.getElementById("delbtn").onclick = () => {
-            deletePoint(e);
-          };
-          document.getElementById("insbtn").onclick = () => {
-            insertPoint(e);
-          };
+          delBtn.onclick = () => deletePoint(e);
+          insBtn.onclick = () => insertPoint(e);
+
+          e.target.unbindPopup();
         }
 
         function deletePoint(e) {
           const latlng = e.target.getLatLng();
-          for (let i = 0; i < wpts.length; i++) {
-            if (wpts[i].lat === latlng.lat && wpts[i].lng === latlng.lng) {
-              wpts.splice(i, 1);
-            }
-          }
+          wpts.splice(getWpt(latlng), 1);
 
           map.removeLayer(e.target);
           polyline.setLatLngs(wpts);
           getDistance();
+          map.closePopup();
         }
 
         function insertPoint(e) {
-          let newpoint;
           const latlng = e.target.getLatLng();
-          for (let i = 0; i < wpts.length; i++) {
-            if (wpts[i].lat === latlng.lat && wpts[i].lng === latlng.lng) {
-              if (i === 0) i = 1;
-              const bounds = new LatLngBounds(wpts[i], wpts[i - 1]);
-              newpoint = bounds.getCenter();
-              wpts.splice(i, 0, newpoint); 
-              break;
-            }
-          }
 
-          const newMarker = new Marker(newpoint, {
+          let clickedWpt = getWpt(latlng);
+          if (clickedWpt === 0) clickedWpt = 1;
+          const bounds = new LatLngBounds(wpts[clickedWpt], wpts[clickedWpt - 1]);
+          const newPoint = bounds.getCenter();
+          wpts.splice(clickedWpt, 0, newPoint);
+
+          const newMarker = new Marker(newPoint, {
             draggable: 'true',
             icon: smallIcon,
           }).addTo(markerGroup);
           newMarker
             .on('dragstart', onDragStart)
-            .on('click', onDragStart)
+            .on('click', updateTooltip)
             .on('dragend', onDragEnd)
-            .on('contextmenu', insDel);
+            .on('contextmenu', insDel)
+            .on('mouseover', updateTooltip);
           polyline.setLatLngs(wpts);
-          getDistance();
+          newMarker.bindTooltip(getDistance(clickedWpt)).openTooltip();
+          //getDistance();
           map.closePopup();
         }
 
