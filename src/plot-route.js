@@ -1,21 +1,38 @@
+'use strict';
 import { CircleMarker, Control, DomEvent, DomUtil, icon, LayerGroup, Marker, Polyline, Popup } from './leaflet-src.esm.js';
 import { orsAPI, defaultProfile, defaultPreference } from './config.js';
 import elevation from './elevation.js';
 
+/** @type {string} Current routing profile */
 let profile = defaultProfile;
+/** @type {string} Current routing preference */
 let preference = defaultPreference;
 
+/**
+ * Leaflet control for plotting routes using OpenRouteService.
+ * @type {Object}
+ */
 Control.PlotRoute = Control.extend({
     options: {
       position: 'topleft',
     },
+    /**
+     * Creates the route planning control UI and handles route requests.
+     * @param {Object} map - The Leaflet map instance
+     * @returns {HTMLElement} The control button element
+     */
     onAdd(map) {
       const elevationDiagram = elevation();
-      
+
       const button = DomUtil.create('button', 'leaflet-bar leaflet-control leaflet-control-custom ors-routing button');
       button.title = 'Get route with OpenRouteService';
       button.id = 'ors-router';
 
+      /**
+       * Stops event propagation for an element.
+       * @param {HTMLElement} elem - The DOM element
+       * @returns {void}
+       */
       function stopEventPropagation(elem) {
         DomEvent.on(elem, 'click contextmenu mousedown mouseup mousewheel dblclick touchmove', DomEvent.stopPropagation);
       }
@@ -63,7 +80,7 @@ Control.PlotRoute = Control.extend({
 
         const buttonDiv = DomUtil.create('div', 'info-window-inner', divInfo);
         buttonDiv.style.overflow = 'visible';
-        
+
         const geoInfo = DomUtil.create('div','info-window-inner input-elems', divInfo);
         geoInfo.id = 'geo-info';
 
@@ -106,6 +123,11 @@ Control.PlotRoute = Control.extend({
           popupAnchor: [0, -5],
         });
 
+        /**
+         * Fetches and displays geographic data for a point.
+         * @param {Object} e - The Leaflet event object
+         * @returns {void}
+         */
         function getPointGeoData(e) {
           fetch(`https://nominatim.openstreetmap.org/?addressdetails=1&q=${e.latlng.lat},${e.latlng.lng}&format=json`)
             .then(response => response.json())
@@ -114,9 +136,16 @@ Control.PlotRoute = Control.extend({
                 .setContent(`<a href="https://duckduckgo.com/?q=${geoLabel[0].display_name}" target="_blank">${geoLabel[0].display_name}</a>`)
                 .setLatLng([geoLabel[0].lat, geoLabel[0].lon])
                 .openOn(map);
-            })
+            });
         }
 
+        /**
+         * Fetches address for a coordinate and updates the UI.
+         * @param {Object} coord - The coordinate object with lat and lng
+         * @param {number} wpt - The waypoint index
+         * @param {string} whatToDo - Action type: 'change', 'ins', or 'del'
+         * @returns {void}
+         */
         function getPointAddress(coord, wpt, whatToDo) {
           fetch(`https://nominatim.openstreetmap.org/reverse?lat=${coord.lat}&lon=${coord.lng}&addressdetails=1&format=json`)
             .then(response => response.json())
@@ -133,7 +162,6 @@ Control.PlotRoute = Control.extend({
               });
 
               //   `<input type="text" id="from" value="" placeholder="From..."><br>`;
-               
               // geoLabel.forEach((label, id) => {
                //  geoInfo.innerHTML += `<input type="text" id="${id}" value="${label}">`;
               // });
@@ -141,9 +169,15 @@ Control.PlotRoute = Control.extend({
               // geoInfo.innerHTML += 
               //   `<input type="text" id="to" value="" placeholder="To...">`;
             })
-            .catch(err => console.log(`Error: ${err}`));
+            .catch(err => alert(`Error: ${err}`));
         }
 
+        /**
+         * Inserts a new waypoint at the appropriate position in the route.
+         * @param {Object} latlon - The lat/lng object
+         * @param {Object} startPoint - The starting point for distance calculation
+         * @returns {void}
+         */
         function insertPoint(latlon, startPoint) {
           // Calculate between which waypoints it should go.
           let minDist = Number.MAX_VALUE;
@@ -170,6 +204,11 @@ Control.PlotRoute = Control.extend({
           getPointAddress(latlon, j + 1, 'ins');
         }
 
+        /**
+         * Deletes a waypoint from the route.
+         * @param {Object} e - The Leaflet event object
+         * @returns {void}
+         */
         function deletePoint(e) {
           const delPopup = DomUtil.create('div');
           const delBtn = DomUtil.create('button', 'button', delPopup);
@@ -191,6 +230,11 @@ Control.PlotRoute = Control.extend({
           });
         }
 
+        /**
+         * Handles the start of a marker drag event.
+         * @param {Object} e - The Leaflet event object
+         * @returns {void}
+         */
         function onDragStart(e) {
           let thisMarker = null;
           const startPoint = e.target.getLatLng();
@@ -207,6 +251,13 @@ Control.PlotRoute = Control.extend({
           });
         }
 
+        /**
+         * Handles the end of a marker drag event.
+         * @param {Object} e - The Leaflet event object
+         * @param {Object} startPoint - The original position before drag
+         * @param {string|number} thisMarker - The marker index or 'new'
+         * @returns {void}
+         */
         function onDragEnd(e, startPoint, thisMarker) {
           const endPoint = e.target.getLatLng();
           if (thisMarker === 'new') {
@@ -219,6 +270,11 @@ Control.PlotRoute = Control.extend({
           routeApiRequest();
         }
 
+        /**
+         * Shows a popup with options when right-clicking on the map.
+         * @param {Object} e - The Leaflet event object
+         * @returns {void}
+         */
         function infoPopup(e) {
           const buttonText = (wpts.length === 0) ? 'Start here':'Next WPT / End';
           const buttonID = (wpts.length === 0) ? 'start':'end';
@@ -236,17 +292,22 @@ Control.PlotRoute = Control.extend({
             wpts.splice(wpts.length, 0, e.latlng);
             map.closePopup();
             new Marker(e.latlng, {
-              icon: icon,
+              icon,
               draggable: 'true',
             }).addTo(layerGroup)
               .on('dragstart', onDragStart)
               .on('contextmenu', deletePoint);
             routeApiRequest();
             getPointAddress(e.latlng, wpts.length, 'ins');
-          }
+          };
         };
         map.on('contextmenu', infoPopup);
 
+        /**
+         * Decodes a GeoJSON polyline into an array of lat/lng objects.
+         * @param {Array} geometry - The GeoJSON coordinates array
+         * @returns {Array} Array of objects with lat, lng, and alt properties
+         */
         function decodePolyline(geometry) {
           const latlngs = [];
           for (let i = 0; i < geometry.length; i++) {
@@ -256,6 +317,11 @@ Control.PlotRoute = Control.extend({
           return latlngs;
         }
 
+        /**
+         * Adds a via point when right-clicking on the route polyline.
+         * @param {Object} e - The Leaflet event object
+         * @returns {void}
+         */
         function clickPolyline(e) {
           new Marker(e.latlng, {
             draggable: 'true',
@@ -265,11 +331,17 @@ Control.PlotRoute = Control.extend({
             .on('contextmenu', deletePoint);
         }
 
+        /**
+         * Loads and displays the route on the map.
+         * @param {Object} request - The API response containing route data
+         * @returns {void}
+         */
         function loadRoute(request) {
           if (request.error) {
             alert(request.error.message);
-            return
+            return;
           }
+
           let p;
           function addRowListener(wpt, coord) {
             let waypoint;
@@ -312,15 +384,15 @@ Control.PlotRoute = Control.extend({
           }
 
           if (polyline) {
-            if (polyline) polyline.remove();
+            polyline.remove();
           }
 
           if (polyline2) {
-            if (polyline2) polyline2.remove();
+            polyline2.remove();
           }
 
           if (polyline3) {
-            if (polyline3) polyline3.remove();
+            polyline3.remove();
           }
 
           polyline3 = new Polyline(coords).setStyle({
@@ -329,20 +401,20 @@ Control.PlotRoute = Control.extend({
             opacity: '.15',
             clickable: 'true',
           }).addTo(layerGroup)
-            .on('contextmenu', clickPolyline)
+            .on('contextmenu', clickPolyline);
           polyline2 = new Polyline(coords).setStyle({
             color: 'white',
             weight: '7',
             opacity: '.8',
             clickable: 'true',
           }).addTo(layerGroup)
-            .on('contextmenu', clickPolyline)
+            .on('contextmenu', clickPolyline);
           polyline = new Polyline(coords).setStyle({
             color: 'red',
             weight: '2',
             clickable: 'true',
           }).addTo(layerGroup)
-            .on('contextmenu', clickPolyline)
+            .on('contextmenu', clickPolyline);
 
           stopEventPropagation(polyline);
           stopEventPropagation(polyline2);
@@ -358,6 +430,10 @@ Control.PlotRoute = Control.extend({
           elevationDiagram.addData(coords, map);
         }
 
+        /**
+         * Makes an API request to OpenRouteService for route calculation.
+         * @returns {void}
+         */
         function routeApiRequest() {
           if (wpts.length > 1) {
             const plot = [];
@@ -382,13 +458,13 @@ Control.PlotRoute = Control.extend({
                 coordinates: plot,
                 elevation: true,
                 instructions: true,
-                preference: preference,
+                preference,
                 options: {avoid_features: ferry}
               })
             })
               .then(response => response.json())
               .then(request => loadRoute(request))
-              .catch(err => console.log(`Error: ${err}`));
+              .catch(err => alert(`Error: ${err}`));
           }
         }
 
@@ -417,13 +493,13 @@ Control.PlotRoute = Control.extend({
         const values = Object.values(profiles);
         const keys = Object.keys(profiles);
         let key;
-        for (const k in values) {
-          if (values[k] === profile) {
+        for (let i = 0; i < values.length; i++) {
+          if (values[i] === profile) {
             checked = 'checked';
-            key = keys[k];
+            key = keys[i];
           } else {
             checked = '';
-            key = keys[k];
+            key = keys[i];
           }
 
           profileSelect.innerHTML += `<input type="radio" id="${profiles[key]}" 
@@ -435,7 +511,7 @@ Control.PlotRoute = Control.extend({
           Shortest</label><label><input type="radio" id ="fastest" name="pref" value="fastest">Fastest</label>
           <label><input type="checkbox" id="other_prefs" name="ferry" checked>Avoid ferries</label>`;
 
-        DomEvent.on(profileSelect, 'click', (e) => {
+        DomEvent.on(profileSelect, 'click', e => {
           if (e.target.name === 'profile') {
             profile = e.target.value;
           } else if (e.target.name === 'pref') {
@@ -447,7 +523,12 @@ Control.PlotRoute = Control.extend({
       });
 
       return button;
-    }
+    },
   });
 
+/**
+ * Creates a new PlotRoute control instance.
+ * @param {Object} options - Leaflet control options
+ * @returns {Control.PlotRoute} The PlotRoute control instance
+ */
 export default options => new Control.PlotRoute(options);

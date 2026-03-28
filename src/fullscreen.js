@@ -1,10 +1,20 @@
+'use strict';
 import { Control, DomUtil, DomEvent } from './leaflet-src.esm.js';
 
+/**
+ * Leaflet control for fullscreen mode.
+ * @type {Object}
+ */
 Control.FullScreen = Control.extend({
     options: {
       position: 'topleft',
     },
 
+    /**
+     * Creates the fullscreen toggle button.
+     * @param {Object} map - The Leaflet map instance
+     * @returns {HTMLElement} The control button element
+     */
     onAdd(map) {
       const button = DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom fullscreen button');
       button.title = 'Fullscreen';
@@ -43,4 +53,9 @@ Control.FullScreen = Control.extend({
     },
   });
 
+/**
+ * Creates a new FullScreen control instance.
+ * @param {Object} options - Leaflet control options
+ * @returns {Control.FullScreen} The FullScreen control instance
+ */
 export default options => new Control.FullScreen(options);

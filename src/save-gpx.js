@@ -1,3 +1,10 @@
+'use strict';
+
+/**
+ * Saves waypoints as a GPX file download.
+ * @param {Array} coords - Array of coordinate objects with lat, lng, and optional alt
+ * @returns {void}
+ */
 export default function saveGpx(coords) {
   if (!coords || coords.length < 1) return; 
   let gpxTrack = '';

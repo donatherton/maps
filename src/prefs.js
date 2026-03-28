@@ -1,12 +1,19 @@
+'use strict';
 import { Control, DomUtil, DomEvent } from './leaflet-src.esm.js';
 
+/**
+ * Leaflet control for user preferences (units, default location).
+ * @type {Object}
+ */
 Control.Prefs = Control.extend({
   options: {
     position: 'topright',
   },
-  // onRemove(map) {
-
-  // },
+  /**
+   * Creates the preferences control UI.
+   * @param {Object} map - The Leaflet map instance
+   * @returns {HTMLElement} The control button element
+   */
   onAdd(map) {
     const button = DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom button');
     button.id = 'prefs-button';
@@ -73,6 +80,10 @@ Control.Prefs = Control.extend({
           }
         });
 
+        /**
+         * Closes the preferences window.
+         * @returns {void}
+         */
         function closePrefs() {
           if (prefsWindow) {
             DomUtil.remove(prefsWindow);
@@ -85,5 +96,10 @@ Control.Prefs = Control.extend({
   },
 });
 
+/**
+ * Creates a new Prefs control instance.
+ * @param {Object} options - Leaflet control options
+ * @returns {Control.Prefs} The Prefs control instance
+ */
 export default options => new Control.Prefs(options);
 

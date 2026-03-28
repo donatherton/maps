@@ -1,12 +1,19 @@
+'use strict';
 import { Control, DomEvent, DomUtil, Popup } from './leaflet-src.esm.js';
 
+/**
+ * Leaflet control for displaying elevation profiles.
+ * @type {Object}
+ */
 Control.Elevation = Control.extend({
   options: {
     position: 'bottomright',
   },
-  // onRemove(map) {
-
-  // },
+  /**
+   * Creates the elevation chart container.
+   * @param {Object} map - The Leaflet map instance
+   * @returns {HTMLElement} The container element
+   */
   onAdd(map) {
     const container = DomUtil.create('div', 'elev-window');
     container.id = 'elevation-div';
@@ -37,7 +44,13 @@ Control.Elevation = Control.extend({
     return container;
   },
 
-  addData(coords, map) { // Map needs to be explicitly sent as it loses scope here
+  /**
+   * Renders elevation data on the chart.
+   * @param {Array} coords - Array of coordinate objects with lat, lng, and alt
+   * @param {Object} map - The Leaflet map instance
+   * @returns {void}
+   */
+  addData(coords, map) {
     const pt = [];
     const spotMarker = new Popup({ closeButton: false });
 
@@ -55,6 +68,12 @@ Control.Elevation = Control.extend({
       distUnit = 'miles';
     }
 
+    /**
+     * Calculates distance between two points using Haversine formula.
+     * @param {Object} latlng1 - First point with lat and lng
+     * @param {Object} latlng2 - Second point with lat and lng
+     * @returns {number} Distance in meters
+     */
     function distanceBetween(latlng1, latlng2) {
       const rad = Math.PI / 180;
       const lat1 = latlng1.lat * rad;
@@ -100,6 +119,11 @@ Control.Elevation = Control.extend({
       }
     }
 
+    /**
+     * Gets the x or y axis data from the elevation points.
+     * @param {string} axis - Which axis to get ('x' for distance, 'y' for elevation)
+     * @returns {Array} Array of axis values
+     */
     function getAxis(axis) {
       let d;
       const dist = [];
@@ -177,4 +201,9 @@ Control.Elevation = Control.extend({
   },
 });
 
+/**
+ * Creates a new Elevation control instance.
+ * @param {Object} options - Leaflet control options
+ * @returns {Control.Elevation} The Elevation control instance
+ */
 export default options => new Control.Elevation(options);

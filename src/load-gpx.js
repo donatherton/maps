@@ -1,10 +1,20 @@
+'use strict';
 import { Control, DomUtil, DomEvent, DivIcon, LayerGroup, Polyline, Marker } from './leaflet-src.esm.js';
 
+/**
+ * Leaflet control for loading GPX files.
+ * @type {Object}
+ */
 Control.LoadGPX = Control.extend({
       options: {
       position: 'topleft',
     },
 
+    /**
+     * Creates the control button and handles GPX file loading.
+     * @param {Object} map - The Leaflet map instance
+     * @returns {HTMLElement} The control button element
+     */
     onAdd(map) {
       const button = DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom load-gpx button');
       button.title = 'Load a GPX file';
@@ -17,6 +27,11 @@ Control.LoadGPX = Control.extend({
       fileInput.accept = '.gpx';
       fileInput.style.display = 'none';
 
+      /**
+       * Parses and displays a GPX file on the map.
+       * @param {Document} gpxFile - The parsed GPX XML document
+       * @returns {void}
+       */
       function loadGPX(gpxFile) {
         Control.ResetWindow = Control.extend({
           onAdd(map) {
@@ -50,6 +65,8 @@ Control.LoadGPX = Control.extend({
         const factor = unit === 'km' ? 1.609344 : 1;
         let el;
 
+        const layerGroup = new LayerGroup().addTo(map);
+
         const startIcon = new DivIcon({
           className: 'starticon',
           iconSize: [15, 15],
@@ -69,6 +86,14 @@ Control.LoadGPX = Control.extend({
           alert("Sorry, this file can't be loaded");
         }
 
+        /**
+         * Calculates the distance between two points using the Haversine formula.
+         * @param {number} lat1 - Latitude of first point in degrees
+         * @param {number} lon1 - Longitude of first point in degrees
+         * @param {number} lat2 - Latitude of second point in degrees
+         * @param {number} lon2 - Longitude of second point in degrees
+         * @returns {number} Distance in miles
+         */
         function distance(lat1, lon1, lat2, lon2) {
           if ((lat1 === lat2) && (lon1 === lon2)) {
             return 0;
@@ -89,7 +114,8 @@ Control.LoadGPX = Control.extend({
           return dist;
         }
 
-        const name = gpxFile.getElementsByTagName('name')[0].innerHTML;
+        const nameEl = gpxFile.getElementsByTagName('name')[0];
+        const name = nameEl ? nameEl.innerHTML : 'Unnamed Track';
         const hasAlts = gpxFile.getElementsByTagName('ele').length;
         const trkpts = gpxFile.getElementsByTagName(tags);
         for (let i = 0; i < trkpts.length; i++) {
@@ -98,9 +124,8 @@ Control.LoadGPX = Control.extend({
           if (hasAlts) {
             try {
               alt = Number(trkpts[i].getElementsByTagName('ele')[0].innerHTML);
-            }
-            catch(err) {
-              console.log(err);
+            } catch (err) {
+              console.error(err);
             }
           }
 
@@ -110,8 +135,6 @@ Control.LoadGPX = Control.extend({
             lngth += distance(coords[i].lat, coords[i].lng, coords[i - 1].lat, coords[i - 1].lng);
           }
         }
-
-        const layerGroup = new LayerGroup().addTo(map);
 
         const popupText = `<p>${name}</p><p>${(lngth * factor).toFixed(3)} ${unit}</p>`;
 
@@ -143,13 +166,18 @@ Control.LoadGPX = Control.extend({
         fileInput.click();
         fileInput.onchange = () => {
           const file = fileInput.files[0];
+          if (!file) {
+            return;
+          }
           const reader = new FileReader();
           reader.onload = () => {
             const parser = new DOMParser();
             const gpx = parser.parseFromString(reader.result, 'text/xml');
             loadGPX(gpx);
           };
-
+          reader.onerror = () => {
+            alert('Error reading file');
+          };
           reader.readAsText(file);
         };
       };
@@ -158,4 +186,9 @@ Control.LoadGPX = Control.extend({
     },
   });
 
+/**
+ * Creates a new LoadGPX control instance.
+ * @param {Object} options - Leaflet control options
+ * @returns {Control.LoadGPX} The LoadGPX control instance
+ */
 export default options => new Control.LoadGPX(options);

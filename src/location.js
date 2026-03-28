@@ -1,10 +1,20 @@
+'use strict';
 import  { CircleMarker, Control, DomEvent, DomUtil } from './leaflet-src.esm.js';
 
+/**
+ * Leaflet control for finding the user's current location.
+ * @type {Object}
+ */
 Control.FindLocation = Control.extend({
     options: {
       position: 'topleft',
     },
 
+    /**
+     * Creates the location button and handles geolocation.
+     * @param {Object} map - The Leaflet map instance
+     * @returns {HTMLElement} The control button element
+     */
     onAdd(map) {
       const button = DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom location-button button');
       button.title = 'Get your current location';
@@ -48,4 +58,9 @@ Control.FindLocation = Control.extend({
     },
   });
 
+/**
+ * Creates a new FindLocation control instance.
+ * @param {Object} options - Leaflet control options
+ * @returns {Control.FindLocation} The FindLocation control instance
+ */
 export default options => new Control.FindLocation(options);

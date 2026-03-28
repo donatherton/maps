@@ -1,10 +1,20 @@
+'use strict';
 import { CircleMarker, Control, DomEvent, DomUtil } from './leaflet-src.esm.js';
 
+/**
+ * Leaflet control for place search using Nominatim.
+ * @type {Object}
+ */
 Control.PlaceSearch = Control.extend({
     options: {
       position: 'topleft',
     },
 
+    /**
+     * Creates the search control UI.
+     * @param {Object} map - The Leaflet map instance
+     * @returns {HTMLElement} The control button element
+     */
     onAdd(map) {
       const button = DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom search-button button');
       button.title = 'Search';
@@ -31,6 +41,11 @@ Control.PlaceSearch = Control.extend({
 
         let resultsTable;
 
+        /**
+         * Searches for places using Nominatim API.
+         * @param {string} searchStr - The search query string
+         * @returns {void}
+         */
         function geoSearch(searchStr) {
           function addRowListener(result, line) {
             DomEvent.addListener(line, 'click touchend', e => {
@@ -62,7 +77,8 @@ Control.PlaceSearch = Control.extend({
                   addRowListener(results[i], resultLine);
                 });
               } else searchInput.value = 'No results';
-            });
+            })
+            .catch(err => alert(err));
         }
 
         map.on('mousedown', () => {
@@ -83,4 +99,9 @@ Control.PlaceSearch = Control.extend({
     },
   });
 
+/**
+ * Creates a new PlaceSearch control instance.
+ * @param {Object} options - Leaflet control options
+ * @returns {Control.PlaceSearch} The PlaceSearch control instance
+ */
 export default options => new Control.PlaceSearch(options);

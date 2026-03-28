@@ -1,5 +1,10 @@
+'use strict';
 import { Polyline, latLng } from './leaflet-src.esm.js';
 
+/**
+ * Creates a geodesic Polyline class that draws great circle paths.
+ * @returns {Object} A Polyline subclass
+ */
 function geodesicPoly() {
   return Polyline.extend({
     setLatLngs(latlngs) {
@@ -9,6 +14,13 @@ function geodesicPoly() {
   });
 }
 
+/**
+ * Converts a line segment to geodesic (great circle) points.
+ * @param {Object} startLatlng - Starting point with lat and lng
+ * @param {Object} endLatlng - Ending point with lat and lng
+ * @param {Array} convertedPoints - Array to push converted points to
+ * @returns {void}
+ */
 function geodesicConvertLine(startLatlng, endLatlng, convertedPoints) {
   const R = 6378137; // Earth radius in meters (doesn't have to be exact)
   const maxlength = 5000; // Meters before splitting
@@ -47,6 +59,11 @@ function geodesicConvertLine(startLatlng, endLatlng, convertedPoints) {
   }
 }
 
+/**
+ * Converts an array of lat/lng points to geodesic points.
+ * @param {Array} latlngs - Array of lat/lng points
+ * @returns {Array} Array of converted geodesic points
+ */
 function geodesicConvertLines(latlngs) {
   if (latlngs.length) {
     const geodesiclatlngs = [];
@@ -69,4 +86,10 @@ function geodesicConvertLines(latlngs) {
 
 const GeodesicPolyline = geodesicPoly();
 
+/**
+ * Creates a new geodesic polyline.
+ * @param {Array} latlngs - Array of lat/lng points
+ * @param {Object} options - Polyline options
+ * @returns {Object} A new GeodesicPolyline instance
+ */
 export default (latlngs, options) => new GeodesicPolyline(latlngs, options);

@@ -1,10 +1,20 @@
+'use strict';
 import { Control, DomUtil, DomEvent, DivIcon, LatLngBounds, LayerGroup, Marker } from './leaflet-src.esm.js';
 import geodesicPolyline from './geodesic.js';
 
+/**
+ * Leaflet control for manual track plotting/measuring.
+ * @type {Object}
+ */
 Control.PlotTrack = Control.extend({
     options: {
       position: 'topleft',
     },
+    /**
+     * Creates the track plotting control UI.
+     * @param {Object} map - The Leaflet map instance
+     * @returns {HTMLElement} The control button element
+     */
     onAdd(map) {
       const button = DomUtil.create('button', 'leaflet-bar leaflet-control leaflet-control-custom track-plotter button');
       button.title = 'Measure / plot route manually';
@@ -19,7 +29,7 @@ Control.PlotTrack = Control.extend({
       let divInfo;
       const smallIcon = new DivIcon({
         className: 'divicon',
-        iconSize: [20, 20], // size of the icon
+        iconSize: [20, 20],
         popupAnchor: [0, -10], // point from which the popup should open relative to the iconAnchor
       });
 
@@ -66,7 +76,7 @@ Control.PlotTrack = Control.extend({
           const wpt = [];
           for (let i = 0; i < wpts.length; i++) {
             wpt.push([wpts[i].lng, wpts[i].lat]);
-          };
+          }
 
           await fetch('https://api.openrouteservice.org/elevation/line', {
             method: 'POST',
@@ -78,8 +88,8 @@ Control.PlotTrack = Control.extend({
             body: JSON.stringify({
               format_in: 'polyline',
               format_out: 'polyline',
-              geometry: wpt
-            })
+              geometry: wpt,
+            }),
           })
             .then(response => response.json())
             .then(data => {
@@ -97,8 +107,8 @@ Control.PlotTrack = Control.extend({
                 elevationDiagram.addTo(map);
                 elevationDiagram.addData(wpts, map);
               } else alert('Error: bad data returned');
-          })
-        })
+          });
+        });
 
         DomEvent.on(reset, 'click', () => {
           if (elevationDiagram) elevationDiagram.remove();
@@ -109,6 +119,12 @@ Control.PlotTrack = Control.extend({
           document.getElementById('plotter').disabled = false;
         });
 
+        /**
+         * Calculates the bearing between two points.
+         * @param {Object} p1 - First point with lat and lng
+         * @param {Object} p2 - Second point with lat and lng
+         * @returns {string} The bearing in degrees
+         */
         function getBearing(p1, p2) {
           const toRadians = degrees => degrees * (Math.PI / 180);
           const lat1 = toRadians(p2.lat);
@@ -121,6 +137,11 @@ Control.PlotTrack = Control.extend({
           return (b < 0 ? b + 360 : b).toFixed(0);
         }
 
+        /**
+         * Calculates the distance between waypoints.
+         * @param {number} [currentMarker=wpts.length-1] - The current marker index
+         * @returns {string} Formatted distance and bearing string
+         */
         function getDistance(currentMarker = wpts.length - 1) {
           if (currentMarker > 0) {
             let i;
@@ -147,10 +168,23 @@ Control.PlotTrack = Control.extend({
           }
         }
 
+        /**
+         * Updates the distance display div.
+         * @param {number} distance - The total distance
+         * @param {number} bearing - The bearing in degrees
+         * @param {number} conversionFactor - The conversion factor to the selected unit
+         * @param {string} unit - The unit string (km or miles)
+         * @returns {void}
+         */
         function updateDistanceDiv(distance, bearing, conversionFactor, unit) {
           distanceDiv.innerHTML = (distance / conversionFactor).toFixed(3) + unit + ' ' + bearing + '&deg;';
         }
 
+        /**
+         * Handles map click to add waypoints.
+         * @param {Object} e - The Leaflet event object
+         * @returns {void}
+         */
         function onMapClick(e) {
           const newMarker = new Marker(e.latlng, {
             draggable: 'true',
@@ -168,11 +202,15 @@ Control.PlotTrack = Control.extend({
             polyline.setLatLngs(wpts);
             newMarker.bindTooltip(getDistance()).openTooltip();
           }
-          //getDistance();
         }
 
         map.on('click', onMapClick);
 
+        /**
+         * Finds the index of a waypoint by its latlng.
+         * @param {Object} latlng - The latlng object
+         * @returns {number} The index of the waypoint, or -1 if not found
+         */
         function getWpt(latlng) {
           for (let i = 0; i < wpts.length; i++) {
             if (wpts[i].lat === latlng.lat && wpts[i].lng === latlng.lng) {
@@ -181,6 +219,11 @@ Control.PlotTrack = Control.extend({
           }
         }
 
+        /**
+         * Updates the tooltip content for a marker.
+         * @param {Object} e - The Leaflet event object
+         * @returns {void}
+         */
         function updateTooltip(e) {
           const latlng = e.target.getLatLng();
           const currentMarker = getWpt(latlng);
@@ -191,6 +234,11 @@ Control.PlotTrack = Control.extend({
           }
         }
 
+        /**
+         * Handles the start of a marker drag event.
+         * @param {Object} e - The Leaflet event object
+         * @returns {void}
+         */
         function onDragStart(e) {
           const latlng = e.target.getLatLng();
           const currentMarker = getWpt(latlng);
@@ -198,19 +246,34 @@ Control.PlotTrack = Control.extend({
           e.target.on('drag', e => onDrag(e, currentMarker));
         }
 
+        /**
+         * Handles marker dragging to update the track.
+         * @param {Object} e - The Leaflet event object
+         * @param {number} currentMarker - The index of the marker being dragged
+         * @returns {void}
+         */
         function onDrag(e, currentMarker) {
           const latlng = e.target.getLatLng();
           wpts.splice(currentMarker, 1, latlng);
           polyline.setLatLngs(wpts);
           updateTooltip(e);
-          //getDistance();
         }
 
+        /**
+         * Handles the end of a marker drag event.
+         * @param {Object} e - The Leaflet event object
+         * @returns {void}
+         */
         function onDragEnd(e) {
           e.target.off('drag');
         }
 
-        function insDel(e) { console.log(e);
+        /**
+         * Shows insert/delete point popup on right-click.
+         * @param {Object} e - The Leaflet event object
+         * @returns {void}
+         */
+        function insDel(e) {
           const newPopup = DomUtil.create('div');
           const delBtn = DomUtil.create('button', 'button', newPopup);
           const insBtn = DomUtil.create('button', 'button', newPopup);
@@ -225,6 +288,11 @@ Control.PlotTrack = Control.extend({
           e.target.unbindPopup();
         }
 
+        /**
+         * Deletes a waypoint from the track.
+         * @param {Object} e - The Leaflet event object
+         * @returns {void}
+         */
         function deletePoint(e) {
           const latlng = e.target.getLatLng();
           wpts.splice(getWpt(latlng), 1);
@@ -235,6 +303,11 @@ Control.PlotTrack = Control.extend({
           map.closePopup();
         }
 
+        /**
+         * Inserts a new waypoint into the track.
+         * @param {Object} e - The Leaflet event object
+         * @returns {void}
+         */
         function insertPoint(e) {
           const latlng = e.target.getLatLng();
 
@@ -270,4 +343,9 @@ Control.PlotTrack = Control.extend({
     },
   });
 
+/**
+ * Creates a new PlotTrack control instance.
+ * @param {Object} options - Leaflet control options
+ * @returns {Control.PlotTrack} The PlotTrack control instance
+ */
 export default options => new Control.PlotTrack(options);

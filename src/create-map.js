@@ -1,3 +1,5 @@
+'use strict';
+
 import { Map, tileLayer, control, popup, layerGroup, marker } from './leaflet-src.esm.js';
 import { orsAPI, tfAPI, defaultLocation, defaultZoom, defaultLayer } from './config.js';
 import placeSearch from './search.js';
@@ -8,12 +10,18 @@ import findLocation from './location.js';
 import fullScreen from './fullscreen.js';
 import prefs from './prefs.js';
 
+/**
+ * Creates and initializes the map with all layers, controls, and plugins.
+ * @returns {void}
+ */
 export default () => {
   const osm = tileLayer(
     'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     {
       id: 'osm',
       attribution: 'Map data &copy;  <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      continuousWorld: 'false',
+      minZoom: 3,
     },
   );
   const outdoors = tileLayer(
@@ -21,6 +29,7 @@ export default () => {
     {
       id: 'outdoors',
       attribution: 'Map data &copy; <a href=https://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      minZoom: 3,
     },
   );
   const cycle = tileLayer(
@@ -28,6 +37,7 @@ export default () => {
     {
       id: 'cycle',
       attribution: 'Map data &copy; <a href=https://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      minZoom: 3,
     },
   );
   const sea = tileLayer(
@@ -35,6 +45,7 @@ export default () => {
     {
       id: 'sea',
       attribution: 'Map data: &copy; <a href="https://www.openseamap.org">OpenSeaMap</a> contributors',
+      minZoom: 3,
     },
   );
   const transport = tileLayer(
@@ -42,6 +53,7 @@ export default () => {
     {
       id: 'transport',
       attribution: 'Map data &copy; <a href=https://www.thunderforest.com/">Thunderforest</a>, &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      minZoom: 3,
     },
   );
   const topo = tileLayer(
@@ -49,6 +61,7 @@ export default () => {
     {
       id: 'topo',
       attribution: 'Map data &copy; <a href=https://opentopomap.org//">OpenTopoMap</a>',
+      minZoom: 3,
       maxZoom: 21,
     },
   );
@@ -57,14 +70,16 @@ export default () => {
     {
       id: 'streets',
       attribution: '<a href="https://mapbox.com/about/maps" class="mapbox-wordmark" target="_blank">Mapbox</a> &copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> <strong><a href="https://www.mapbox.com/map-feedback/" target="_blank">Improve this map</a></strong>',
+      minZoom: 3,
       maxZoom: 21,
     },
   );
   const os = tileLayer(
     'https://{s}.os.openstreetmap.org/layer/gb_os_om_local_2020_04/{z}/{x}/{y}.png',
     {
-        attribution: 'Contains OS data &copy; Crown copyright and database right 2020',
-        maxZoom: 18,
+      attribution: 'Contains OS data &copy; Crown copyright and database right 2020',
+      minZoom: 3,
+      maxZoom: 18,
     },
   );
 
@@ -105,6 +120,15 @@ export default () => {
     layers: layer,
   });
 
+  // const southWest = latLng(-85, -180);
+  // const northEast = latLng(85, 180);
+  // const bounds = latLngBounds(southWest, northEast);
+  // map.setMaxBounds(bounds);
+
+  // map.on('drag', () => {
+  //   map.panInsideBounds(bounds, { animate: false });
+  // });
+
   // add layer control
   control.layers(baseMaps, overLayers).addTo(map);
 
@@ -114,13 +138,13 @@ export default () => {
   });
 
   // Set cursors
-  onmousedown = () => {
+  map.on('mousedown', () => {
     document.getElementById('map').style.cursor = 'grabbing';
-  };
+  });
 
-  onmouseup = () => {
+  map.on('mouseup', () => {
     document.getElementById('map').style.cursor = 'grab';
-  };
+  });
 
     // Add plugin buttons
   placeSearch().addTo(map);
@@ -138,10 +162,13 @@ export default () => {
       .setLatLng(e.latlng)
       .setContent(`${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}<br /><button class="button" id="geo">What's around here?</button>`)
       .openOn(map);
-    document.getElementById('geo').onclick = () => {
-      geoDataRequest(e);
-      map.closePopup(infoPopup);
-    };
+    const geoButton = document.getElementById('geo');
+    if (geoButton) {
+      geoButton.onclick = () => {
+        geoDataRequest(e);
+        map.closePopup(infoPopup);
+      };
+    }
   });
 
   let markerGroup;
@@ -150,6 +177,11 @@ export default () => {
     if (markerGroup) markerGroup.remove();
   });
 
+  /**
+   * Fetches and displays geographic data for a clicked location.
+   * @param {Object} e - The Leaflet event object containing latlng
+   * @returns {void}
+   */
   function geoDataRequest(e) {
     if (markerGroup) markerGroup.remove();
     fetch(`https://api.openrouteservice.org/geocode/reverse?api_key=${orsAPI}&point.lon=${e.latlng.lng}&point.lat=${e.latlng.lat}&layers=address%2Cvenue`)
@@ -164,6 +196,9 @@ export default () => {
         const popupContent = label.properties.label;
         newMarker.bindPopup(`<a href="https://duckduckgo.com/?q=${popupContent}" target="_blank">${popupContent}</a>`);
       });
-    });
+    })
+      .catch(err => {
+        alert(err);
+      });
   }
 };
