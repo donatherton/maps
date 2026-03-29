@@ -1,5 +1,5 @@
 'use strict';
-import { Control, DomUtil, DomEvent, DivIcon, LayerGroup, Polyline, Marker } from './leaflet-src.esm.js';
+import { Control, DomUtil, DomEvent, DivIcon, latLng, LayerGroup, Polyline, Marker } from './leaflet-src.esm.js';
 
 /**
  * Leaflet control for loading GPX files.
@@ -62,7 +62,7 @@ Control.LoadGPX = Control.extend({
         let lngth = 0;
         let tags;
         const unit = localStorage.getItem('dist') === 'km' ? 'Km' : 'miles';
-        const factor = unit === 'km' ? 1.609344 : 1;
+        const factor = unit === 'miles' ? 0.00062137 : 0.001;
         let el;
 
         const layerGroup = new LayerGroup().addTo(map);
@@ -99,19 +99,21 @@ Control.LoadGPX = Control.extend({
             return 0;
           }
 
-          const radlat1 = (Math.PI * lat1) / 180;
-          const radlat2 = (Math.PI * lat2) / 180;
-          const theta = lon1 - lon2;
-          const radtheta = (Math.PI * theta) / 180;
-          let dist = (Math.sin(radlat1) * Math.sin(radlat2)) + (Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta));
-          if (dist > 1) {
-            dist = 1;
-          }
+          return latLng([lat1, lon1]).distanceTo(latLng([lat2, lon2]));
 
-          dist = Math.acos(dist);
-          dist = (dist * 180) / Math.PI;
-          dist = dist * 60 * 1.1515;
-          return dist;
+          // const radlat1 = (Math.PI * lat1) / 180;
+          // const radlat2 = (Math.PI * lat2) / 180;
+          // const theta = lon1 - lon2;
+          // const radtheta = (Math.PI * theta) / 180;
+          // let dist = (Math.sin(radlat1) * Math.sin(radlat2)) + (Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta));
+          // if (dist > 1) {
+          //   dist = 1;
+          // }
+
+          // dist = Math.acos(dist);
+          // dist = (dist * 180) / Math.PI;
+          // dist = dist * 60 * 1.1515;
+          //return dist;
         }
 
         const nameEl = gpxFile.getElementsByTagName('name')[0];

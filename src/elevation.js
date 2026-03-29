@@ -1,5 +1,5 @@
 'use strict';
-import { Control, DomEvent, DomUtil, Popup } from './leaflet-src.esm.js';
+import { Control, DomEvent, DomUtil, latLng, Popup } from './leaflet-src.esm.js';
 
 /**
  * Leaflet control for displaying elevation profiles.
@@ -68,116 +68,69 @@ Control.Elevation = Control.extend({
       distUnit = 'miles';
     }
 
-    /**
-     * Calculates distance between two points using Haversine formula.
-     * @param {Object} latlng1 - First point with lat and lng
-     * @param {Object} latlng2 - Second point with lat and lng
-     * @returns {number} Distance in meters
-     */
-    function distanceBetween(latlng1, latlng2) {
-      const rad = Math.PI / 180;
-      const lat1 = latlng1.lat * rad;
-      const lat2 = latlng2.lat * rad;
-      const sinDLat = Math.sin(((latlng2.lat - latlng1.lat) * rad) / 2);
-      const sinDLon = Math.sin(((latlng2.lng - latlng1.lng) * rad) / 2);
-      const a = (sinDLat * sinDLat) + (Math.cos(lat1) * Math.cos(lat2)) * sinDLon * sinDLon;
-      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-      return 6378137 * c;
-    }
-
-    function onmouseover(item) {
-      // Calc which index on coords array
-      const dist = (item.clientX - canvas.getBoundingClientRect().left) / canvas.getBoundingClientRect().width * Number(pt[pt.length - 1][0]);
-      let index = 0;
-      while (index < pt.length - 1 && pt[index + 1][0] <= dist) {
-        index++;
-      }
-
-      // Add marker on polyline
-      const d = (pt[index][0] * distUnitFactor).toFixed(3);
-      const h = (pt[index][1] * heightUnitFactor).toFixed(0);
-      spotMarker
-        .setLatLng([coords[index].lat, coords[index].lng])
-        .setContent(`${d} ${distUnit}<br>${h} ${heightUnit}`)
-        .openOn(map);
-      // Tooltip on chart
-      ctx2.clearRect(0, 0, newCanvas.width, newCanvas.height);
-      ctx2.beginPath();
-      ctx2.moveTo(item.clientX - canvas.getBoundingClientRect().left, 45);
-      ctx2.lineTo(item.clientX - canvas.getBoundingClientRect().left, 99);
-      ctx2.lineWidth = 1;
-      ctx2.strokeStyle = '#637E0B';
-      ctx2.stroke();
-      ctx2.fillText(h + heightUnit, item.clientX - canvas.getBoundingClientRect().left + 2, 55);
-      ctx2.fillText(d + distUnit, item.clientX - canvas.getBoundingClientRect().left + 2, 65);
-    }
-
-    function onmouseout() {
-      if (map.hasLayer(spotMarker)) {
-        map.closePopup(spotMarker);
-        ctx2.clearRect(0, 0, newCanvas.width, newCanvas.height);
-      }
-    }
-
-    /**
-     * Gets the x or y axis data from the elevation points.
-     * @param {string} axis - Which axis to get ('x' for distance, 'y' for elevation)
-     * @returns {Array} Array of axis values
-     */
-    function getAxis(axis) {
-      let d;
-      const dist = [];
-      const index = (axis === 'x') ? 0 : 1;
-      for (let i = 0; i < pt.length; i += 1) {
-        d = pt[i][index];
-        dist.push(d);
-      }
-
-      return dist;
-    }
-
-    // Make the array with x and y axis data
+    // Pre-calculate distances using Leaflet's efficient distanceTo
     pt[0] = [0, coords[0].alt];
-    let d = 0;
+    let totalDist = 0;
     for (let i = 1; i < coords.length; i++) {
-      d += distanceBetween(coords[i], coords[i - 1]);
-      pt.push([(d / 1000).toFixed(3), Math.round(coords[i].alt)]);
+      const point1 = latLng([coords[i - 1].lat, coords[i - 1].lng]);
+      const point2 = latLng([coords[i].lat, coords[i].lng]);
+      totalDist += point1.distanceTo(point2);
+      pt.push([(totalDist / 1000).toFixed(3), Math.round(coords[i].alt)]);
     }
 
+    // Create and size canvas dynamically
     const canvas = document.createElement('canvas');
     canvas.id = 'elevation';
     canvas.height = 75;
-    document.getElementById('elevation-div').appendChild(canvas);
+    const container = document.getElementById('elevation-div');
+    container.appendChild(canvas);
+    
+    // Set canvas width based on container
+    canvas.width = container.clientWidth - 20;
 
     const ctx = canvas.getContext('2d');
 
-    const maxHeight = Math.max(...getAxis('y'));
-    //const minHeight = Math.min(...getAxis('y')); // These next few commented lines start the y axis at min height not 0
+    const maxHeight = Math.max(...pt.map(p => p[1]));
     const heightFactor = (canvas.height - 25) / maxHeight;
-    // const heightFactor = (canvas.height - 25) / (maxHeight - minHeight);
-    const widthFactor = canvas.width / Number(pt[pt.length - 1][0]);
+    const totalDistance = Number(pt[pt.length - 1][0]);
+    const widthFactor = canvas.width / totalDistance;
+
+    // Pre-calculate screen coordinates for all points
+    const screenPoints = pt.map((point, i) => ({
+      screenX: (Number(point[0]) * widthFactor) + 1,
+      screenY: canvas.height - ((point[1]) * heightFactor) - 12,
+      dist: Number(point[0]),
+      elev: point[1],
+      lat: coords[i].lat,
+      lng: coords[i].lng
+    }));
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // x axis
+    
+    // Draw axes
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 1;
+    
+    // X axis
     ctx.beginPath();
-    ctx.moveTo(0, canvas.height - 0);
-    ctx.lineTo(canvas.width, canvas.height - 0);
+    ctx.moveTo(0, canvas.height);
+    ctx.lineTo(canvas.width, canvas.height);
     ctx.stroke();
-    ctx.fillText((pt[pt.length - 1][0] * distUnitFactor).toFixed(3) + distUnit, canvas.width - 55, canvas.height - 2);
-    //y axis
+    ctx.fillText((totalDistance * distUnitFactor).toFixed(3) + distUnit, canvas.width - 55, canvas.height - 2);
+    
+    // Y axis
     ctx.beginPath();
     ctx.moveTo(0, 0);
     ctx.lineTo(0, canvas.height);
     ctx.stroke();
     ctx.fillText('0', 2, canvas.height - 2);
-    //ctx.fillText((minHeight * heightUnitFactor).toFixed(0) + heightUnit, 2, canvas.height - 2)
     ctx.fillText((maxHeight * heightUnitFactor).toFixed(0) + heightUnit, 2, 10);
 
+    // Draw elevation profile using pre-calculated coordinates
     ctx.beginPath();
-    ctx.moveTo(1, canvas.height - 12);
-    pt.forEach(point => {
-      ctx.lineTo((Number(point[0]) * widthFactor) + 1, canvas.height - ((point[1]) * heightFactor) - 12);
-      //ctx.lineTo((Number(point[0]) * widthFactor) + 1, canvas.height - ((point[1] - minHeight) * heightFactor) - 12);
+    ctx.moveTo(screenPoints[0].screenX, canvas.height - 12);
+    screenPoints.forEach(point => {
+      ctx.lineTo(point.screenX, point.screenY);
     });
     ctx.lineTo(canvas.width, canvas.height - 12);
     ctx.closePath();
@@ -186,18 +139,119 @@ Control.Elevation = Control.extend({
     ctx.strokeStyle = 'rgba(156, 194, 34, 0.8)';
     ctx.stroke();
 
-    const newCanvas = document.createElement('canvas');
-    newCanvas.id = 'mouseover';
-    newCanvas.height = 100;
+    // Create mouseover overlay canvas
+    const overlayCanvas = document.createElement('canvas');
+    overlayCanvas.id = 'mouseover';
+    overlayCanvas.height = 100;
+    overlayCanvas.width = canvas.width;
+    container.appendChild(overlayCanvas);
+    const ctx2 = overlayCanvas.getContext('2d');
 
-    document.getElementById('elevation-div').appendChild(newCanvas);
-    const ctx2 = newCanvas.getContext('2d');
+    // Performance optimizations
+    let lastX = -1000;
+    let rafId = null;
+    let canvasRect = canvas.getBoundingClientRect();
+    
+    // Cache canvas rect and update on resize
+    const updateCanvasRect = () => {
+      canvasRect = canvas.getBoundingClientRect();
+    };
+    window.addEventListener('resize', updateCanvasRect);
 
-    newCanvas.addEventListener('touchmove', e => onmouseover(e.changedTouches[0]));
-    newCanvas.addEventListener('mousemove', onmouseover);
+    // Binary search for finding nearest point
+    function findNearestPoint(targetDist) {
+      let left = 0;
+      let right = screenPoints.length - 1;
+      
+      while (left <= right) {
+        const mid = Math.floor((left + right) / 2);
+        if (screenPoints[mid].dist <= targetDist) {
+          if (mid === screenPoints.length - 1 || screenPoints[mid + 1].dist > targetDist) {
+            return mid;
+          }
+          left = mid + 1;
+        } else {
+          right = mid - 1;
+        }
+      }
+      return 0;
+    }
 
-    newCanvas.addEventListener('mouseout', onmouseout);
-    newCanvas.addEventListener('touchend', onmouseout);
+    // Optimized drawing function using requestAnimationFrame
+    function drawOverlay(x) {
+      // Clear both old and new regions to ensure text is removed
+      const clearWidth = 150; // Wide enough to cover text extending to the right
+      const clearStart = Math.max(0, Math.min(lastX, x) - clearWidth/2);
+      ctx2.clearRect(clearStart, 0, clearWidth * 2, overlayCanvas.height);
+      
+      // Draw vertical line
+      ctx2.beginPath();
+      ctx2.moveTo(x, 45);
+      ctx2.lineTo(x, 99);
+      ctx2.lineWidth = 1;
+      ctx2.strokeStyle = '#637E0B';
+      ctx2.stroke();
+      
+      // Find nearest point using binary search
+      const targetDist = (x / canvasRect.width) * totalDistance;
+      const index = findNearestPoint(targetDist);
+      const point = screenPoints[index];
+      
+      // Update map marker
+      spotMarker
+        .setLatLng([point.lat, point.lng])
+        .setContent(`${(point.dist * distUnitFactor).toFixed(3)} ${distUnit}<br>${point.elev} ${heightUnit}`)
+        .openOn(map);
+      
+      // Draw tooltip text
+      ctx2.fillStyle = '#000';
+      ctx2.font = '10px Arial';
+      ctx2.fillText(`${point.elev}${heightUnit}`, x + 2, 55);
+      ctx2.fillText(`${(point.dist * distUnitFactor).toFixed(3)}${distUnit}`, x + 2, 65);
+      
+      lastX = x;
+    }
+
+    // Optimized mouse event handler with throttling
+    function onmouseover(e) {
+      const x = e.clientX - canvasRect.left;
+      
+      // Skip if movement is too small
+      if (Math.abs(x - lastX) < 2) return;
+      
+      // Cancel previous animation frame if pending
+      if (rafId) cancelAnimationFrame(rafId);
+      
+      // Schedule redraw on next animation frame
+      rafId = requestAnimationFrame(() => drawOverlay(x));
+    }
+
+    function onmouseout() {
+      if (map.hasLayer(spotMarker)) {
+        map.closePopup(spotMarker);
+        // Clear wider area to ensure text is removed
+        ctx2.clearRect(Math.max(0, lastX - 60), 0, 150, overlayCanvas.height);
+        lastX = -1000;
+      }
+    }
+
+    // Debounced event handlers for touch events
+    let touchTimeout;
+    function debouncedTouchHandler(e) {
+      clearTimeout(touchTimeout);
+      touchTimeout = setTimeout(() => onmouseover(e.changedTouches[0]), 16);
+    }
+
+    function debouncedTouchEnd() {
+      clearTimeout(touchTimeout);
+      touchTimeout = setTimeout(onmouseout, 50);
+    }
+
+    // Attach event listeners
+    overlayCanvas.addEventListener('touchmove', debouncedTouchHandler, { passive: true });
+    overlayCanvas.addEventListener('mousemove', onmouseover);
+    overlayCanvas.addEventListener('mouseout', onmouseout);
+    overlayCanvas.addEventListener('touchend', debouncedTouchEnd);
   },
 });
 
