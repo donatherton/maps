@@ -31,6 +31,7 @@ Control.FindLocation = Control.extend({
             i = false;
             mark = new CircleMarker([0, 0]).addTo(map);
             id = navigator.geolocation.watchPosition(position => {
+              if (position.coords.accuracy > 1000) console.log('Not an accurate location');
               const lat = position.coords.latitude;
               const lon = position.coords.longitude;
               mark.setLatLng([lat, lon]);
@@ -41,7 +42,7 @@ Control.FindLocation = Control.extend({
               alert("Can't find you");
             },
 
-              { enableHighAccuracy: true, timeout: 50000 });
+              { enableHighAccuracy: true });
           } else alert('No geolocation');
         } else {
           if (mark) {
